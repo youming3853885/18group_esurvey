@@ -7,6 +7,7 @@
     <meta name="description" content="三維度深度分析（興趣×能力×價值觀），給出具體可行動的職涯方向。專為對未來感到迷茫的在學學生設計。">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root {
             --bg: #0f172a;
@@ -717,6 +718,10 @@
         <!-- Clarity message -->
         <div class="clarity-message" id="clarityMsg"></div>
 
+        <button class="btn btn-primary btn-full" onclick="generateMonsterCard()" style="margin-bottom: 2rem; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #78350f; box-shadow: 0 4px 15px rgba(245,158,11,0.4); border: 2px solid #fff;">
+            ✨ 生成我的「專屬怪物卡牌」 (可分享至 IG) ✨
+        </button>
+
         <!-- TOP 3 + Chart -->
         <div class="result-grid">
             <div class="result-card">
@@ -785,6 +790,63 @@
         <div style="text-align:center;padding:1rem 0 2rem;">
             <button class="btn btn-ghost" onclick="restart()" style="margin-right:.75rem;">🔄 重新測驗</button>
             <button class="btn btn-primary" onclick="window.print()">🖨 列印結果</button>
+        </div>
+    </div>
+</div>
+
+<!-- Card Generator Modal -->
+<div id="cardGeneratorModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem;">
+    <h3 style="color:white; margin-bottom:1rem; font-weight:800; text-align:center; font-size:1.1rem;">✨ 長按圖片儲存您的怪物圖鑑卡 👇</h3>
+    <div id="generatedCardContainer" style="border-radius:18px; overflow:hidden; box-shadow:0 0 40px rgba(251,191,36,0.25); max-width: 380px; width:100%;"></div>
+    <div style="font-size:.8rem; color:#94a3b8; margin-top:.75rem;">可直接發布至 IG 測驗限動！</div>
+    <button class="btn btn-ghost" style="margin-top:1.5rem; background:white; color:var(--bg);" onclick="document.getElementById('cardGeneratorModal').style.display='none'">關閉視窗</button>
+</div>
+
+<!-- Hidden Canvas Target -->
+<div id="cardTemplateWrap" style="position:fixed; left:-9999px; top:0; z-index:-1;">
+    <div id="monsterCard" style="width: 380px; height: 676px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 20px; padding: 18px; border: 12px solid #cbd5e1; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; position: relative;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="color: white; font-weight: 800; font-size: 1.3rem; display: flex; align-items:center; gap: 8px;">
+                <span id="cardRarity" style="background:#fbbf24; color:#78350f; padding:3px 10px; border-radius:6px; font-size:0.9rem;">SSR</span>
+                <span id="cardTitle">代碼寄生獸</span>
+            </div>
+            <div style="color: #ef4444; font-weight: 900; font-size: 1.3rem;">HP <span id="cardScore">98</span></div>
+        </div>
+
+        <!-- Image Area -->
+        <div style="width: 100%; height: 280px; background: #fff; border: 4px solid #94a3b8; border-radius: 8px; overflow: hidden; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; position:relative;">
+            <!-- Fallback text -->
+            <div id="cardFallbackText" style="position:absolute; color:#94a3b8; font-weight:700; z-index:1;">[等待怪獸圖像釋出中]</div>
+            <img id="cardImage" src="" style="width: 100%; height: 100%; object-fit: cover; position:relative; z-index:2; display:none;" onload="this.style.display='block';">
+        </div>
+
+        <!-- Quote Area -->
+        <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+            <div style="color: #a5b4fc; font-weight: 800; font-size: 0.9rem; margin-bottom: 6px;">🗡️ 怪物本能</div>
+            <div id="cardQuote" style="color: white; font-size: 0.85rem; line-height: 1.6; font-weight: 400;">你不是不想聽人講話，你只是覺得直接跟機器溝通比較不會中風。</div>
+        </div>
+
+        <!-- Best Matches -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+            <div style="background: rgba(16, 185, 129, 0.15); border-left: 4px solid #10b981; padding: 10px; border-radius: 0 8px 8px 0;">
+                <div style="color: #10b981; font-weight: 800; font-size: 0.8rem; margin-bottom: 2px;">🟢 天菜神隊友 (職涯互補)</div>
+                <div id="cardBestMatch" style="color: white; font-size: 0.85rem; font-weight: 500;">設計學群、藝術學群</div>
+            </div>
+            <div style="background: rgba(239, 68, 68, 0.15); border-left: 4px solid #ef4444; padding: 10px; border-radius: 0 8px 8px 0;">
+                <div style="color: #ef4444; font-weight: 800; font-size: 0.8rem; margin-bottom: 2px;">🔴 絕不合拍 (理念互斥)</div>
+                <div id="cardWorstMatch" style="color: white; font-size: 0.85rem; font-weight: 500;">法政學群</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; position: absolute; bottom: 18px; left: 18px; right: 18px;">
+            <div style="font-size: 0.75rem; color: #94a3b8; line-height: 1.5; text-align: left;">
+                <strong style="color:white;">職場怪物圖鑑</strong><br>職涯羅盤 2.0
+            </div>
+            <div style="width: 50px; height: 50px; background: white; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size:0.6rem; color:#000; text-align:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                <div style="border:1px solid #1e293b; width: 44px; height: 44px; font-weight:900; line-height:1.2;">掃碼<br>測驗</div>
+            </div>
         </div>
     </div>
 </div>
@@ -1592,6 +1654,83 @@ function submitEmailUnlock() {
         console.error("解鎖回傳有誤，但仍為使用者解鎖閱讀", err);
         document.getElementById('premiumWrap').classList.add('unlocked');
     });
+}
+
+// ═══════════════════════════════════════════════════════
+//  MONSTER CARD GENERATION
+// ═══════════════════════════════════════════════════════
+const MONSTER_MAP = {
+    '資訊學群': { rarity:'SSR', title:'代碼寄生獸', img:'monsters/code_parasite_burton_1776662852615.png', quote:'你不是討厭跟人講話，你只是覺得直接跟機器溝通比較不會中風。', match:'數理化學、管理學群 (能幫你看大局)', mismatch:'文史哲學群 (太抽象)' },
+    '財經學群': { rarity:'SR', title:'金幣巨龍', img:'monsters/coin_dragon_burton_1776662891730.png', quote:'你對投資報酬清醒無比，連在人際關係裡都會不自覺計算「沉沒成本」。', match:'管理學群、資訊學群 (講求效率)', mismatch:'社會與心理學群 (太溫情)' },
+    '醫藥衛教學群': { rarity:'SSR', title:'聖光天使', img:'monsters/healing_angel_burton_1776662933572.png', quote:'你總是照顧全世界的痛，卻經常忘了自己的肝跟胃也是血肉做的。', match:'生命科學、社會心理 (守護者同盟)', mismatch:'工程學群 (過於冷酷)' },
+    '大眾傳播學群': { rarity:'SR', title:'風向變形怪', img:'', quote:'你靠捕捉氣氛與趨勢為食，在人群中看似如魚得水，其實極需獨處回血。', match:'藝術學群、管理學群 (需要創意與行銷)', mismatch:'數理化學學群 (缺乏變通)' },
+    '管理學群': { rarity:'SSR', title:'暴君獅鷲', img:'', quote:'理智上知道要分工合作，但遇到豬隊友時內心只會咆哮「不如老子自己來」。', match:'財經學群、工程學群 (強強聯手)', mismatch:'藝術學群 (難以控制)' },
+    '藝術學群': { rarity:'SSR', title:'幻象獨角獸', img:'', quote:'你用極限的美感鄙視這個粗糙的世界，卻又總在深夜懷疑自己是不是天生奇才。', match:'建築設計、大眾傳播 (靈感激盪)', mismatch:'法政學群 (條條框框)' },
+    // 預設 (防呆)
+    'DEFAULT': { rarity:'R', title:'未開化原神', img:'', quote:'你的靈魂還在選擇要成為什麼樣的怪物，正在持續演化中...', match:'開放探索', mismatch:'畫地自限' }
+};
+
+function generateMonsterCard() {
+    if(!window.finalAnalysisData) {
+        alert("請先完成一次測驗生成報告！");
+        return;
+    }
+    
+    // 顯示 Loading
+    const ov = document.getElementById('loading-overlay');
+    ov.querySelector('p').textContent = '正在繪製您的寶可夢怪物卡...';
+    ov.classList.add('show');
+    ov.style.display = 'flex';
+
+    // 取得資料
+    const topGroup = window.finalAnalysisData.topGroup;
+    const sortedScores = Object.entries(window.finalAnalysisData.finalScores).sort((a,b)=>b[1]-a[1]);
+    const mData = MONSTER_MAP[topGroup] || MONSTER_MAP['DEFAULT'];
+    
+    // 寫入卡牌 UI
+    document.getElementById('cardRarity').textContent = mData.rarity;
+    document.getElementById('cardTitle').textContent = mData.title;
+    document.getElementById('cardQuote').textContent = mData.quote;
+    document.getElementById('cardScore').textContent = sortedScores[0][1];
+    document.getElementById('cardBestMatch').textContent = mData.match || '互補同伴';
+    document.getElementById('cardWorstMatch').textContent = mData.mismatch || '理念互斥';
+    
+    const cardImg = document.getElementById('cardImage');
+    if(mData.img) {
+        cardImg.src = mData.img;
+        cardImg.style.display = 'block';
+    } else {
+        cardImg.style.display = 'none'; // fallback text shows
+    }
+
+    // 等待圖片與文字變化載入後截圖以避免空白
+    setTimeout(() => {
+        const cardNode = document.getElementById('monsterCard');
+        // scale:2 讓匯出的圖片更清晰 (Retina 畫質)
+        html2canvas(cardNode, { scale: 2, backgroundColor: null, useCORS: true }).then(canvas => {
+            const container = document.getElementById('generatedCardContainer');
+            container.innerHTML = '';
+            
+            // 將 canvas 轉為圖片可以長按儲存
+            const imgEl = document.createElement('img');
+            imgEl.src = canvas.toDataURL("image/png");
+            imgEl.style.width = '100%';
+            imgEl.style.height = 'auto';
+            imgEl.style.display = 'block';
+            
+            container.appendChild(imgEl);
+            
+            // 隱藏 Loading, 顯示 Modal
+            ov.classList.remove('show');
+            ov.style.display = 'none';
+            document.getElementById('cardGeneratorModal').style.display = 'flex';
+        }).catch(err => {
+            console.error('截圖錯誤：', err);
+            alert('卡片生成失敗，請更換瀏覽器試試看！');
+            ov.classList.remove('show');
+            ov.style.display = 'none';
+        });
+    }, 500); // 緩衝時間讓渲染完成
 }
 
 // ═══════════════════════════════════════════════════════
