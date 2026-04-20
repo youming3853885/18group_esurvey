@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>18學群職涯偏好問卷（完整版）</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: #f3f4f6; }
+        .question-card { transition: all 0.3s ease; }
+        .question-card:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        
+        /* 自定義 Radio Button 樣式 */
+        .radio-group { display: flex; justify-content: space-between; width: 100%; max-width: 300px; margin: 0 auto; }
+        .radio-label { 
+            cursor: pointer; display: flex; flex-direction: column; align-items: center; 
+            font-size: 0.75rem; color: #6b7280; position: relative;
+        }
+        .radio-input { appearance: none; width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 50%; outline: none; transition: all 0.2s; margin-bottom: 4px; }
+        .radio-input:checked { border-color: #2563eb; background-color: #2563eb; transform: scale(1.2); }
+        .radio-input:hover { border-color: #60a5fa; }
+        
+        /* 選項區塊樣式 */
+        .option-row { 
+            display: flex; flex-direction: column; 
+            padding: 1rem 0; border-bottom: 1px solid #e5e7eb; 
+        }
+        .option-text { margin-bottom: 0.5rem; font-weight: 500; color: #374151; }
+        
+        @media (min-width: 768px) {
+            .option-row { flex-direction: row; align-items: center; justify-content: space-between; }
+            .option-text { flex: 1; margin-bottom: 0; margin-right: 1rem; }
+            .radio-group { margin: 0; }
+        }
+
+        .result { display: none; }
+        .loading { display: none; text-align: center; font-size: 1.2rem; color: #2563eb; }
+    </style>
+</head>
+<body class="max-w-4xl mx-auto p-4 md:p-8">
+
+    <header class="text-center mb-8">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">18學群職涯偏好問卷：精準探索版</h1>
+        <div class="bg-blue-50 p-4 rounded-lg text-left inline-block max-w-2xl">
+            <p class="text-gray-700 mb-2">
+                🎓 <strong>測驗說明：</strong>這份問卷包含 <strong>30 個情境</strong>，能深入分析你對不同領域的潛在興趣。
+            </p>
+            <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                <li>每個情境有 4 個選項，請針對每個選項給予 <strong>1～5 分</strong>。</li>
+                <li><strong>1 分</strong> = 完全不感興趣 / 不符合</li>
+                <li><strong>5 分</strong> = 非常感興趣 / 非常符合</li>
+                <li>請憑直覺作答，沒有標準答案！</li>
+            </ul>
+        </div>
+    </header>
+
+    <form id="surveyForm" class="space-y-8">
+        <div id="questionsContainer">
+            </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-400">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">自我評估（不計入學群分數）</h3>
+            
+            <div class="option-row">
+                <span class="option-text">Q31. 你對目前在校成績的滿意度？</span>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="self_score" value="1" class="radio-input"><span>1</span></label>
+                    <label class="radio-label"><input type="radio" name="self_score" value="2" class="radio-input"><span>2</span></label>
+                    <label class="radio-label"><input type="radio" name="self_score" value="3" class="radio-input" checked><span>3</span></label>
+                    <label class="radio-label"><input type="radio" name="self_score" value="4" class="radio-input"><span>4</span></label>
+                    <label class="radio-label"><input type="radio" name="self_score" value="5" class="radio-input"><span>5</span></label>
+                </div>
+            </div>
+
+            <div class="option-row border-none">
+                <span class="option-text">Q32. 你對未來志願選擇的清晰程度？</span>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="self_future" value="1" class="radio-input"><span>1</span></label>
+                    <label class="radio-label"><input type="radio" name="self_future" value="2" class="radio-input"><span>2</span></label>
+                    <label class="radio-label"><input type="radio" name="self_future" value="3" class="radio-input" checked><span>3</span></label>
+                    <label class="radio-label"><input type="radio" name="self_future" value="4" class="radio-input"><span>4</span></label>
+                    <label class="radio-label"><input type="radio" name="self_future" value="5" class="radio-input"><span>5</span></label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-4 rounded-lg hover:bg-blue-700 shadow-lg transform hover:-translate-y-1 transition-all">
+            查看分析結果
+        </button>
+    </form>
+
+    <div id="loading" class="loading my-8">
+        <p>正在分析你的數據...</p>
+    </div>
+
+    <div id="result" class="result bg-white p-6 md:p-8 rounded-lg shadow-xl mt-8">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">你的職涯雷達圖譜</h2>
+        
+        <div class="w-full max-w-2xl mx-auto mb-8">
+            <canvas id="radarChart"></canvas>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div id="topGroups" class="bg-blue-50 p-6 rounded-lg"></div>
+            <div id="careerSuggestions" class="bg-green-50 p-6 rounded-lg"></div>
+        </div>
+
+        <div id="subjectWeights" class="mt-8 space-y-4"></div>
+
+        <div class="mt-8 text-center">
+            <button id="backToHome" class="bg-gray-600 text-white py-3 px-8 rounded-lg hover:bg-gray-700">
+                重新測驗
+            </button>
+            <button onclick="window.print()" class="bg-green-600 text-white py-3 px-8 rounded-lg hover:bg-green-700 ml-4">
+                列印結果
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // --- 資料設定區 ---
+
+        // 18學群列表
+        const groups = [
+            '資訊學群', '工程學群', '數理化學學群', '醫藥衛教學群', '生命科學學群', '生物資源學群', '地球與環境學群', // 自然組傾向
+            '大眾傳播學群', '藝術學群', '建築與設計學群', '文史哲學群', '外語學群', // 文史藝術
+            '財經學群', '管理學群', '法政學群', '社會與心理學群', '教育學群', '遊憩與運動學群' // 社會商管
+        ];
+
+        // 題目資料庫 (30題，每題4選項，確保平均分配)
+        // 設計邏輯：每個學群在總共120個選項中出現約6-7次
+        const questionsData = [
+            {
+                id: 1, title: "社群媒體經營",
+                options: [
+                    { text: "拍攝並剪輯一支有特效的創意短影音", group: "大眾傳播學群" },
+                    { text: "撰寫一篇深度分析動漫或電影的影評", group: "文史哲學群" },
+                    { text: "設計版面視覺與濾鏡，讓畫面更美觀", group: "藝術學群" },
+                    { text: "開發一個自動回覆粉絲訊息的機器人程式", group: "資訊學群" }
+                ]
+            },
+            {
+                id: 2, title: "舉辦大型電競比賽",
+                options: [
+                    { text: "規劃比賽場地的舞台動線與空間設計", group: "建築與設計學群" },
+                    { text: "擔任賽事主播或導播，掌控現場氣氛", group: "大眾傳播學群" },
+                    { text: "架設比賽用的伺服器與網路系統", group: "工程學群" },
+                    { text: "計算門票收入與贊助商的財務報表", group: "財經學群" }
+                ]
+            },
+            {
+                id: 3, title: "解決環境問題",
+                options: [
+                    { text: "研究能分解塑膠的新型細菌或酵素", group: "生命科學學群" },
+                    { text: "設計一套全校性的垃圾分類教學課程", group: "教育學群" },
+                    { text: "開發能自動夾取海洋垃圾的機械手臂", group: "工程學群" },
+                    { text: "推動社區心理輔導，緩解氣候焦慮", group: "社會與心理學群" }
+                ]
+            },
+            {
+                id: 4, title: "一日職人體驗",
+                options: [
+                    { text: "跟著醫生巡房，學習判讀病歷數據", group: "醫藥衛教學群" },
+                    { text: "跟著健身教練學習人體肌肉運作原理", group: "遊憩與運動學群" },
+                    { text: "跟著律師研究法條，撰寫訴訟狀", group: "法政學群" },
+                    { text: "跟著會計師查核公司帳務與稅務", group: "財經學群" }
+                ]
+            },
+            {
+                id: 5, title: "社團成果發表會",
+                options: [
+                    { text: "繪製活動海報與周邊商品設計圖", group: "藝術學群" },
+                    { text: "擔任總召，負責協調各部門與控制預算", group: "管理學群" },
+                    { text: "帶領大家去戶外採集植物標本並解說", group: "生物資源學群" },
+                    { text: "負責撰寫活動的新聞稿與社群文案", group: "文史哲學群" }
+                ]
+            },
+            {
+                id: 6, title: "未來科技展",
+                options: [
+                    { text: "操作精密的醫療檢測儀器", group: "醫藥衛教學群" },
+                    { text: "分析大數據預測未來的消費趨勢", group: "數理化學學群" },
+                    { text: "組裝一台無人機並撰寫飛行路徑", group: "工程學群" },
+                    { text: "用流利的英語向外國貴賓介紹展品", group: "外語學群" }
+                ]
+            },
+            {
+                id: 7, title: "創辦新社團",
+                options: [
+                    { text: "氣候變遷觀察社：記錄天氣數據", group: "地球與環境學群" },
+                    { text: "模擬聯合國社：討論國際公約與政治", group: "法政學群" },
+                    { text: "基因探索社：進行DNA萃取實驗", group: "生命科學學群" },
+                    { text: "創業實習社：學習如何開公司與行銷", group: "管理學群" }
+                ]
+            },
+            {
+                id: 8, title: "自我進修",
+                options: [
+                    { text: "學習攝影構圖與色彩學", group: "藝術學群" },
+                    { text: "研究股票K線圖與投資理財知識", group: "財經學群" },
+                    { text: "學習Python或C++程式語言", group: "資訊學群" },
+                    { text: "學習第二外語（日韓德法西）", group: "外語學群" }
+                ]
+            },
+            {
+                id: 9, title: "暑期實習選擇",
+                options: [
+                    { text: "去醫院協助衛教宣導與長者照護", group: "醫藥衛教學群" },
+                    { text: "去旅行社規劃生態旅遊路線", group: "遊憩與運動學群" },
+                    { text: "去人資部門學習面試與員工訓練", group: "管理學群" },
+                    { text: "去農場學習有機栽培與病蟲害防治", group: "生物資源學群" }
+                ]
+            },
+            {
+                id: 10, title: "論壇議題探討",
+                options: [
+                    { text: "如何運用腦科學提升學習效率", group: "教育學群" },
+                    { text: "數學模型在流行病傳播中的應用", group: "數理化學學群" },
+                    { text: "網路隱私權與數位法律的界線", group: "法政學群" },
+                    { text: "AI人工智慧對人類社會的心理影響", group: "社會與心理學群" }
+                ]
+            },
+            // --- Q11-20 ---
+            {
+                id: 11, title: "面對突發狀況",
+                options: [
+                    { text: "冷靜分析現有資源，擬定最佳撤退路徑", group: "數理化學學群" },
+                    { text: "安撫大家的情緒，提供心理支持", group: "社會與心理學群" },
+                    { text: "迅速利用手邊工具修理損壞的設備", group: "工程學群" },
+                    { text: "擔任發言人，對外清楚說明狀況", group: "大眾傳播學群" }
+                ]
+            },
+            {
+                id: 12, title: "喜歡的閱讀題材",
+                options: [
+                    { text: "各國的歷史故事與古典文學", group: "文史哲學群" },
+                    { text: "最新的科技雜誌與3C評測", group: "資訊學群" },
+                    { text: "建築大師的作品集與室內設計雜誌", group: "建築與設計學群" },
+                    { text: "探索宇宙奧秘與地質結構的書籍", group: "地球與環境學群" }
+                ]
+            },
+            {
+                id: 13, title: "理想的工作環境",
+                options: [
+                    { text: "在實驗室裡專注研究，探索未知", group: "生命科學學群" },
+                    { text: "在法庭或議會上，為正義辯護", group: "法政學群" },
+                    { text: "在戶外大自然中，保育森林與動物", group: "生物資源學群" },
+                    { text: "在跨國企業裡，使用外語溝通商務", group: "外語學群" }
+                ]
+            },
+            {
+                id: 14, title: "志工服務",
+                options: [
+                    { text: "到偏鄉小學進行課業輔導", group: "教育學群" },
+                    { text: "協助海龜復育與海洋淨灘活動", group: "地球與環境學群" },
+                    { text: "幫非營利組織規劃募款活動", group: "管理學群" },
+                    { text: "為外籍移工提供翻譯與法律諮詢協助", group: "外語學群" }
+                ]
+            },
+            {
+                id: 15, title: "手機App開發構想",
+                options: [
+                    { text: "一款能即時辨識植物種類的App", group: "生物資源學群" },
+                    { text: "一款個人記帳與投資分析的App", group: "財經學群" },
+                    { text: "一款結合AR技術的城市導覽App", group: "建築與設計學群" },
+                    { text: "一款幫助憂鬱症患者記錄心情的App", group: "社會與心理學群" }
+                ]
+            },
+            {
+                id: 16, title: "Netflix 紀錄片選擇",
+                options: [
+                    { text: "《抽象：設計的藝術》", group: "建築與設計學群" },
+                    { text: "《體壇祕話》或運動員傳記", group: "遊憩與運動學群" },
+                    { text: "《我們的星球》生態紀錄片", group: "地球與環境學群" },
+                    { text: "《金融帝國》或華爾街故事", group: "財經學群" }
+                ]
+            },
+            {
+                id: 17, title: "高中科展主題",
+                options: [
+                    { text: "探討不同洗手乳的殺菌效果", group: "醫藥衛教學群" },
+                    { text: "利用程式模擬紅綠燈的最佳秒數", group: "資訊學群" },
+                    { text: "自製天然染料並應用於布料", group: "藝術學群" },
+                    { text: "研究校園土壤的酸鹼值與成分", group: "地球與環境學群" }
+                ]
+            },
+            {
+                id: 18, title: "大學聽講",
+                options: [
+                    { text: "哲學思考：我是誰？生命的意義", group: "文史哲學群" },
+                    { text: "材料科學：奈米科技的應用", group: "數理化學學群" },
+                    { text: "休閒管理：如何經營一家五星級飯店", group: "遊憩與運動學群" },
+                    { text: "特殊教育：認識過動症與自閉症", group: "教育學群" }
+                ]
+            },
+            {
+                id: 19, title: "組隊競賽的角色",
+                options: [
+                    { text: "負責撰寫程式碼的核心開發者", group: "資訊學群" },
+                    { text: "負責美編與簡報設計的設計師", group: "建築與設計學群" },
+                    { text: "負責上台演講與說服評審的講者", group: "大眾傳播學群" },
+                    { text: "負責團隊分工與進度管理的隊長", group: "管理學群" }
+                ]
+            },
+            {
+                id: 20, title: "對什麼新聞最敏感？",
+                options: [
+                    { text: "某國通過新的同性婚姻法案", group: "法政學群" },
+                    { text: "發現新的恐龍化石或古文明遺跡", group: "文史哲學群" },
+                    { text: "央行宣布升息，股市大跌", group: "財經學群" },
+                    { text: "諾貝爾化學獎得主的新發現", group: "數理化學學群" }
+                ]
+            },
+            // --- Q21-30 ---
+            {
+                id: 21, title: "設計理想的家",
+                options: [
+                    { text: "重視採光、通風與空間結構的設計", group: "建築與設計學群" },
+                    { text: "充滿智慧家電與自動化控制系統", group: "工程學群" },
+                    { text: "擁有一個種滿花草與蔬菜的庭院", group: "生物資源學群" },
+                    { text: "擺滿藝術畫作與雕塑的品味空間", group: "藝術學群" }
+                ]
+            },
+            {
+                id: 22, title: "如果能穿越時空",
+                options: [
+                    { text: "回到古代研究當時的語言與文學", group: "文史哲學群" },
+                    { text: "去未來看看醫療技術如何延長壽命", group: "醫藥衛教學群" },
+                    { text: "去觀察工業革命時期的機械運作", group: "工程學群" },
+                    { text: "去參與古希臘的民主辯論", group: "法政學群" }
+                ]
+            },
+            {
+                id: 23, title: "想要解決的社會問題",
+                options: [
+                    { text: "改善偏鄉教育資源不足的問題", group: "教育學群" },
+                    { text: "解決都市交通擁塞的數據優化", group: "資訊學群" },
+                    { text: "探討青少年犯罪背後的心理成因", group: "社會與心理學群" },
+                    { text: "降低工廠排放對河川的污染", group: "地球與環境學群" }
+                ]
+            },
+            {
+                id: 24, title: "選修課選擇",
+                options: [
+                    { text: "運動傷害防護與急救", group: "遊憩與運動學群" },
+                    { text: "生活中的化學反應", group: "數理化學學群" },
+                    { text: "歐洲文化與外語會話", group: "外語學群" },
+                    { text: "動物行為學", group: "生命科學學群" }
+                ]
+            },
+            {
+                id: 25, title: "創業點子",
+                options: [
+                    { text: "創立一個手工藝品設計品牌", group: "藝術學群" },
+                    { text: "開設一家結合心理諮商的咖啡廳", group: "社會與心理學群" },
+                    { text: "成立一家生技公司研發新藥", group: "生命科學學群" },
+                    { text: "創辦一家專門報導真相的獨立媒體", group: "大眾傳播學群" }
+                ]
+            },
+            {
+                id: 26, title: "喜歡的YouTube頻道類型",
+                options: [
+                    { text: "DIY手作、繪畫教學頻道", group: "藝術學群" },
+                    { text: "科普知識、物理實驗頻道", group: "數理化學學群" },
+                    { text: "國際新聞、語言學習頻道", group: "外語學群" },
+                    { text: "商業思維、成功人士訪談", group: "管理學群" }
+                ]
+            },
+            {
+                id: 27, title: "對於「數據」的看法",
+                options: [
+                    { text: "是訓練AI人工智慧的燃料", group: "資訊學群" },
+                    { text: "是制定商業決策的重要依據", group: "財經學群" },
+                    { text: "是用來驗證科學理論的證據", group: "數理化學學群" },
+                    { text: "是分析社會現象與民意的工具", group: "社會與心理學群" }
+                ]
+            },
+            {
+                id: 28, title: "週末活動安排",
+                options: [
+                    { text: "去參觀美術館或設計展", group: "藝術學群" },
+                    { text: "去參加馬拉松或登山活動", group: "遊憩與運動學群" },
+                    { text: "去圖書館看一整天的書", group: "文史哲學群" },
+                    { text: "在家修理壞掉的電器", group: "工程學群" }
+                ]
+            },
+            {
+                id: 29, title: "對學校制度的看法",
+                options: [
+                    { text: "希望能修改不合理的校規（法規面）", group: "法政學群" },
+                    { text: "希望能改善校園的空間規劃（建築面）", group: "建築與設計學群" },
+                    { text: "希望能提升教學方法的趣味性（教育面）", group: "教育學群" },
+                    { text: "希望能優化營養午餐的營養調配（衛教面）", group: "醫藥衛教學群" }
+                ]
+            },
+            {
+                id: 30, title: "最後一題：你最希望成為什麼樣的人？",
+                options: [
+                    { text: "利用生技改善人類糧食問題的人", group: "生物資源學群" },
+                    { text: "透過運動管理帶給人們健康快樂的人", group: "遊憩與運動學群" },
+                    { text: "發現新藥物治療癌症的科學家", group: "生命科學學群" },
+                    { text: "透過文字或影像感動人心的創作者", group: "大眾傳播學群" }
+                ]
+            }
+        ];
+
+        // 學群對應職涯建議與參採科目資料 (保持原有邏輯並擴充)
+        const careerSuggestionsMap = {
+            '資訊學群': '軟體工程師、AI科學家、資安專家（趨勢：人工智慧、大數據）',
+            '大眾傳播學群': '社群小編、影音創作者、新聞記者（趨勢：自媒體、數位行銷）',
+            '藝術學群': '視覺設計師、動畫師、策展人（趨勢：數位藝術、UI/UX）',
+            '文史哲學群': '文案企劃、編輯、文化行政（趨勢：內容行銷、IP改編）',
+            '建築與設計學群': '建築師、室內設計師、產品設計師（趨勢：綠建築、智慧住宅）',
+            '財經學群': '精算師、會計師、金融分析師（趨勢：FinTech、區塊鏈）',
+            '地球與環境學群': '環境工程師、地質調查員、氣象預報員（趨勢：ESG永續、淨零碳排）',
+            '教育學群': '中學教師、企業培訓師、教育科技研發（趨勢：線上教學、STEAM教育）',
+            '工程學群': '半導體工程師、機械工程師、電機技師（趨勢：電動車、自動化）',
+            '社會與心理學群': '諮商心理師、社工師、人資專員（趨勢：高齡照護、心理健康）',
+            '醫藥衛教學群': '醫師、藥師、護理師、物理治療師（趨勢：精準醫療、長照）',
+            '遊憩與運動學群': '運動防護員、健身教練、觀光企劃（趨勢：運動科學、體驗經濟）',
+            '法政學群': '律師、司法官、公務員、民代助理（趨勢：智財權、數位法規）',
+            '管理學群': '專案經理、行銷經理、創業家（趨勢：數位轉型、電子商務）',
+            '生物資源學群': '獸醫師、農業技師、森林保育員（趨勢：智慧農業、食品安全）',
+            '生命科學學群': '生技研發人員、疫苗研究員（趨勢：基因編輯、細胞治療）',
+            '外語學群': '口譯員、外交官、國際業務（趨勢：跨國電商、在地化翻譯）',
+            '數理化學學群': '數據科學家、材料研發人員、統計學家（趨勢：半導體材料、演算法）'
+        };
+
+        const subjectWeights = {
+            "資訊學群": { "國": 53, "英": 80, "數A": 83, "數B": 23, "社": 3, "自": 50 },
+            "大眾傳播學群": { "國": 93, "英": 67, "數A": 4, "數B": 11, "社": 44, "自": 2 },
+            "藝術學群": { "國": 96, "英": 70, "數A": 1, "數B": 4, "社": 22, "自": 0 },
+            "文史哲學群": { "國": 96, "英": 64, "數A": 5, "數B": 22, "社": 89, "自": 0 },
+            "建築與設計學群": { "國": 95, "英": 64, "數A": 16, "數B": 13, "社": 35, "自": 8 },
+            "財經學群": { "國": 86, "英": 75, "數A": 28, "數B": 50, "社": 40, "自": 1 },
+            "地球與環境學群": { "國": 76, "英": 79, "數A": 76, "數B": 13, "社": 18, "自": 79 },
+            "教育學群": { "國": 98, "英": 82, "數A": 12, "數B": 51, "社": 46, "自": 2 },
+            "工程學群": { "國": 61, "英": 82, "數A": 94, "數B": 8, "社": 1, "自": 73 },
+            "社會與心理學群": { "國": 89, "英": 65, "數A": 18, "數B": 31, "社": 60, "自": 9 },
+            "醫藥衛教學群": { "國": 74, "英": 91, "數A": 54, "數B": 6, "社": 4, "自": 83 },
+            "遊憩與運動學群": { "國": 90, "英": 63, "數A": 8, "數B": 25, "社": 40, "自": 8 },
+            "法政學群": { "國": 91, "英": 76, "數A": 18, "數B": 40, "社": 87, "自": 0 },
+            "管理學群": { "國": 83, "英": 78, "數A": 26, "數B": 42, "社": 34, "自": 9 },
+            "生物資源學群": { "國": 82, "英": 89, "數A": 53, "數B": 21, "社": 0, "自": 95 },
+            "生命科學學群": { "國": 55, "英": 92, "數A": 50, "數B": 3, "社": 0, "自": 95 },
+            "外語學群": { "國": 92, "英": 88, "數A": 3, "數B": 13, "社": 60, "自": 0 },
+            "數理化學學群": { "國": 45, "英": 81, "數A": 91, "數B": 2, "社": 0, "自": 79 }
+        };
+
+        // --- 程式邏輯區 ---
+
+        // 初始化：渲染題目
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            let html = '';
+
+            questionsData.forEach((q, index) => {
+                html += `
+                    <div class="question-card bg-white p-6 rounded-lg shadow mb-6">
+                        <div class="flex items-center mb-4 border-b pb-2">
+                            <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold text-sm">
+                                ${index + 1}
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800">${q.title}</h3>
+                        </div>
+                        <div class="space-y-2">
+                `;
+
+                q.options.forEach((opt, optIndex) => {
+                    const uniqueName = `q${q.id}_o${optIndex}_${opt.group}`;
+                    html += `
+                        <div class="option-row">
+                            <span class="option-text">${opt.text}</span>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="${uniqueName}" value="1" class="radio-input">
+                                    <span>1</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="${uniqueName}" value="2" class="radio-input">
+                                    <span>2</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="${uniqueName}" value="3" class="radio-input" checked>
+                                    <span>3</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="${uniqueName}" value="4" class="radio-input">
+                                    <span>4</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="${uniqueName}" value="5" class="radio-input">
+                                    <span>5</span>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 頁面載入時執行
+        window.addEventListener('DOMContentLoaded', renderQuestions);
+
+        let radarChartInstance = null;
+
+        document.getElementById('surveyForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // 顯示 Loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            // 模擬計算延遲，增加儀式感
+            setTimeout(calculateAndShowResults, 600);
+        });
+
+        function calculateAndShowResults() {
+            const scores = {};
+            groups.forEach(g => scores[g] = 0);
+
+            // 遍歷所有 Radio inputs
+            const inputs = document.querySelectorAll('input[type="radio"]:checked');
+            
+            inputs.forEach(input => {
+                // name 格式: q1_o0_資訊學群 (如果是計分題)
+                // name 格式: self_score (如果是自評題，忽略)
+                const parts = input.name.split('_');
+                if (parts.length >= 3) {
+                    const group = parts[2];
+                    const points = parseInt(input.value);
+                    if (scores.hasOwnProperty(group)) {
+                        scores[group] += points;
+                    }
+                }
+            });
+
+            // 排序與選出前三名
+            const sortedGroups = Object.entries(scores)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3);
+
+            // 產生結果 HTML
+            let topGroupsHtml = '<h3 class="text-xl font-bold mb-3 text-blue-800">🏆 你的命定學群 TOP 3</h3><ul class="space-y-2">';
+            let careerHtml = '<h3 class="text-xl font-bold mb-3 text-green-800">💼 未來職涯路徑</h3><ul class="space-y-2">';
+            let subjectHtml = '<h3 class="text-xl font-bold mb-4 border-b pb-2">📚 推薦學群參採科目比重參考</h3>';
+            
+            subjectHtml += '<div class="grid md:grid-cols-3 gap-4">';
+
+            sortedGroups.forEach(([group, score], index) => {
+                const rankIcons = ['🥇', '🥈', '🥉'];
+                const career = careerSuggestionsMap[group] || '';
+                
+                // Top Groups
+                topGroupsHtml += `<li class="flex items-center"><span class="text-2xl mr-2">${rankIcons[index]}</span> <span class="font-bold text-lg">${group}</span> <span class="text-sm text-gray-500 ml-2">(${score}分)</span></li>`;
+                
+                // Career
+                if (career) {
+                    careerHtml += `
+                        <li class="bg-white p-3 rounded shadow-sm border-l-4 border-green-500">
+                            <div class="font-bold text-gray-800">${group}</div>
+                            <div class="text-sm text-gray-600">${career}</div>
+                        </li>`;
+                }
+
+                // Subject Weights
+                const w = subjectWeights[group];
+                if (w) {
+                    subjectHtml += `
+                        <div class="bg-gray-50 p-4 rounded border">
+                            <h4 class="font-bold text-center mb-2 text-blue-700">${group}</h4>
+                            <div class="flex justify-between text-sm border-b pb-1 mb-1"><span>科目</span><span>參採率</span></div>
+                            ${Object.keys(w).map(sub => `
+                                <div class="flex justify-between text-sm ${w[sub] > 50 ? 'font-bold text-red-600' : 'text-gray-600'}">
+                                    <span>${sub}</span><span>${w[sub]}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            });
+
+            topGroupsHtml += '</ul>';
+            careerHtml += '</ul>';
+            subjectHtml += '</div><p class="text-xs text-gray-500 mt-2">*參採率：代表該學群下有多少比例的科系會看這個科目的成績。</p>';
+
+            document.getElementById('topGroups').innerHTML = topGroupsHtml;
+            document.getElementById('careerSuggestions').innerHTML = careerHtml;
+            document.getElementById('subjectWeights').innerHTML = subjectHtml;
+
+            // 繪製雷達圖
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(scores),
+                    datasets: [{
+                        label: '學群偏好分數',
+                        data: Object.values(scores),
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            suggestedMax: 35, // 調整最大值以適應新題數
+                            pointLabels: {
+                                font: { size: 11 } // 手機版字體調整
+                            }
+                        }
+                    },
+                    maintainAspectRatio: false
+                }
+            });
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            
+            // 滾動到結果區
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
