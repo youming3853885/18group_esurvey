@@ -1,1777 +1,1141 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>職涯羅盤 2.0｜為迷茫的你而設計</title>
-    <meta name="description" content="三維度深度分析（興趣×能力×價值觀），給出具體可行動的職涯方向。專為對未來感到迷茫的在學學生設計。">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>職群怪物圖鑑｜你內心的是哪一隻怪物？</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #0f172a;
-            --surface: #1e293b;
-            --card: #ffffff;
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --secondary: #22d3ee;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
-            --shadow: 0 4px 24px rgba(0,0,0,.08);
-            --radius: 16px;
-        }
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
+        /* ── Reset & Constants ── */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
-        /* ── HERO ── */
-        .hero {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            padding: 3rem 1.5rem 4rem;
-            text-align: center;
+        body {
+            background: #050508;
+            color: #e2e8f0;
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            /* Allow scroll if needed on main body for result */
+        }
+
+        button {
+            outline: none;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+        }
+
+        /* ── Container (Mobile First, no scroll) ── */
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            max-width: 480px;
+            margin: 0 auto;
+            background: radial-gradient(circle at 50% 30%, #1a1625 0%, #050508 80%);
             position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* ── Screen Management ── */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* ── Home Screen ── */
+        #screen-home {
+            justify-content: flex-start;
+            background: #000;
+            padding: 1.5rem 0;
+        }
+
+        .hero-img {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            object-fit: contain;
+            opacity: 0.9;
+        }
+
+        .hero-cta {
+            position: relative;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #a855f7, #6b21a8);
+            color: #fff;
+            font-weight: 900;
+            font-size: 1.2rem;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+            animation: pulse 2s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* ── Core Game Header ── */
+        .header {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            z-index: 10;
+        }
+
+        .progress-wrap {
+            position: relative;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             overflow: hidden;
         }
-        .hero::before {
-            content: '';
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c084fc, #a855f7);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #a1a1aa;
+            margin-top: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        /* ── Egg Area ── */
+        .egg-area {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem 0;
+        }
+
+        .egg-container {
+            position: relative;
+            width: 35%;
+            /* slightly narrower */
+            max-width: 180px;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .egg-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.4));
+            transition: filter 0.3s, transform 0.1s;
+            pointer-events: none;
+        }
+
+        .egg-svg-cracks {
             position: absolute;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(99,102,241,.15) 0%, transparent 70%);
-            top: -200px; left: 50%; transform: translateX(-50%);
-        }
-        .hero-badge {
-            display: inline-block;
-            background: rgba(99,102,241,.2);
-            border: 1px solid rgba(99,102,241,.4);
-            color: #a5b4fc;
-            padding: .35rem 1rem;
-            border-radius: 50px;
-            font-size: .8rem;
-            letter-spacing: .05em;
-            margin-bottom: 1.25rem;
-        }
-        .hero h1 {
-            font-size: clamp(1.8rem, 5vw, 3rem);
-            font-weight: 900;
-            color: #fff;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-        }
-        .hero h1 span { color: #818cf8; }
-        .hero p {
-            color: #94a3b8;
-            font-size: 1rem;
-            max-width: 480px;
-            margin: 0 auto 2rem;
-            line-height: 1.7;
-        }
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-        .hero-stat { color: #cbd5e1; font-size: .85rem; }
-        .hero-stat span { color: #818cf8; font-weight: 700; font-size: 1.1rem; display: block; }
-
-        /* ── PROGRESS BAR ── */
-        .progress-wrap {
-            background: var(--surface);
-            padding: .75rem 1.5rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(255,255,255,.06);
-        }
-        .progress-info { display: flex; justify-content: space-between; margin-bottom: .4rem; }
-        .progress-info span { color: #94a3b8; font-size: .78rem; }
-        .progress-bar-bg { background: rgba(255,255,255,.08); border-radius: 50px; height: 6px; }
-        .progress-bar-fill {
-            height: 100%; border-radius: 50px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            transition: width .4s ease;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
-        /* ── MAIN CONTENT ── */
-        .content { max-width: 760px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-        .step-section { display: none; }
-        .step-section.active { display: block; animation: fadeUp .4s ease; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
+        .egg-svg-cracks path {
+            fill: none;
+            stroke: #1a1a1a;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 4px #000000);
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ── SECTION HEADER ── */
-        .section-header {
-            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
-            border-radius: var(--radius) var(--radius) 0 0;
-            padding: 1.5rem 1.75rem 1.2rem;
-            color: white;
-        }
-        .section-header .badge {
-            font-size: .72rem; font-weight: 700; letter-spacing: .08em;
-            background: rgba(255,255,255,.2); border-radius: 50px;
-            padding: .25rem .75rem; display: inline-block; margin-bottom: .6rem;
-        }
-        .section-header h2 { font-size: 1.25rem; font-weight: 700; }
-        .section-header p { font-size: .88rem; opacity: .85; margin-top: .3rem; }
-        .section-body {
-            background: var(--card);
-            border-radius: 0 0 var(--radius) var(--radius);
-            padding: 1.75rem;
-            box-shadow: var(--shadow);
+        /* Shake Animation */
+        .shake {
+            animation: shakeAnim 0.3s cubic-bezier(.36, .07, .19, .97) both;
         }
 
-        /* ── ONBOARDING ── */
-        .grade-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: .5rem;
-            margin: 1rem 0;
-        }
-        .grade-btn {
-            padding: .7rem .5rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            background: #f8fafc;
-            font-size: .85rem;
-            font-weight: 500;
-            cursor: pointer;
-            text-align: center;
-            transition: all .2s;
-            color: var(--text);
-        }
-        .grade-btn:hover { border-color: var(--primary); background: #eef2ff; }
-        .grade-btn.selected { border-color: var(--primary); background: #eef2ff; color: var(--primary); font-weight: 700; }
+        @keyframes shakeAnim {
 
-        .clarity-cards { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin: 1rem 0; }
-        .clarity-card {
-            padding: 1rem;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all .2s;
-            background: #f8fafc;
-        }
-        .clarity-card:hover { border-color: var(--primary); transform: translateY(-2px); }
-        .clarity-card.selected { border-color: var(--primary); background: #eef2ff; }
-        .clarity-card .emoji { font-size: 1.5rem; margin-bottom: .4rem; }
-        .clarity-card .label { font-size: .85rem; font-weight: 600; color: var(--text); }
-        .clarity-card .sublabel { font-size: .75rem; color: var(--text-light); margin-top: .2rem; }
+            10%,
+            90% {
+                transform: translate3d(-2px, 2px, 0) rotate(1deg);
+            }
 
-        /* ── VALUES ── */
-        .value-q { margin-bottom: 1.5rem; }
-        .value-q h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .75rem; }
-        .value-q .hint { font-size: .78rem; color: var(--text-light); margin-bottom: .75rem; }
-        .value-options { display: grid; gap: .5rem; }
-        .value-opt {
-            display: flex;
-            align-items: center;
-            gap: .75rem;
-            padding: .75rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all .2s;
-            background: #f8fafc;
-        }
-        .value-opt:hover { border-color: var(--primary); background: #eef2ff; }
-        .value-opt.selected { border-color: var(--primary); background: #eef2ff; }
-        .value-opt.selected-single { border-color: #ef4444; background: #fff1f2; }
-        .value-opt .opt-emoji { font-size: 1.2rem; flex-shrink: 0; }
-        .value-opt .opt-text { font-size: .875rem; color: var(--text); }
-        .value-opt .opt-badge {
-            margin-left: auto;
-            font-size: .7rem; font-weight: 700;
-            color: var(--primary);
-            background: #eef2ff;
-            border-radius: 50px;
-            padding: .2rem .6rem;
-            display: none;
-        }
-        .value-opt.selected .opt-badge { display: block; }
+            20%,
+            80% {
+                transform: translate3d(2px, -3px, 0) rotate(-1deg);
+            }
 
-        /* ── ABILITIES ── */
-        .ability-grid { display: grid; gap: .6rem; }
-        .ability-item {
-            display: flex;
-            align-items: center;
-            gap: .75rem;
-            padding: .8rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            background: #f8fafc;
-        }
-        .ability-label { flex: 1; }
-        .ability-label strong { font-size: .9rem; display: block; }
-        .ability-label small { font-size: .75rem; color: var(--text-light); }
-        .ability-choices { display: flex; gap: .4rem; flex-shrink: 0; }
-        .choice-btn {
-            padding: .35rem .65rem;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            font-size: .75rem;
-            font-weight: 600;
-            cursor: pointer;
-            background: white;
-            transition: all .2s;
-            color: var(--text-light);
-        }
-        .choice-btn:hover { border-color: var(--primary); color: var(--primary); }
-        .choice-btn.good.active  { border-color: var(--success); background: #d1fae5; color: #065f46; }
-        .choice-btn.avg.active   { border-color: var(--warning); background: #fef3c7; color: #92400e; }
-        .choice-btn.weak.active  { border-color: #dc2626; background: #dc2626; color: #fff; font-weight: 700; box-shadow: 0 0 0 2px rgba(220,38,38,.25); }
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 4px, 0) rotate(2deg);
+                filter: brightness(1.2) drop-shadow(0 0 40px rgba(168, 85, 247, 0.8));
+            }
 
-        /* ── SCENARIO QUESTIONS ── */
-        .scenario-hint {
-            background: #fef3c7;
-            border: 1px solid #fcd34d;
-            border-radius: 10px;
-            padding: .75rem 1rem;
-            font-size: .82rem;
-            color: #78350f;
-            margin-bottom: 1.25rem;
-            display: flex;
-            gap: .5rem;
-            align-items: flex-start;
+            40%,
+            60% {
+                transform: translate3d(4px, -4px, 0) rotate(-2deg);
+            }
         }
-        .q-card {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,.04);
-        }
-        .q-card-header {
-            display: flex;
-            align-items: center;
-            gap: .75rem;
-            margin-bottom: .9rem;
-            padding-bottom: .75rem;
-            border-bottom: 1px solid var(--border);
-        }
-        .q-num {
-            background: var(--primary);
-            color: white;
-            border-radius: 50px;
-            width: 28px; height: 28px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .78rem; font-weight: 700;
-            flex-shrink: 0;
-        }
-        .q-title { font-size: .95rem; font-weight: 700; color: var(--text); }
-        .q-status { margin-left: auto; font-size: .72rem; color: var(--text-light); }
-        .q-status.done { color: var(--success); font-weight: 700; }
-        .q-options { display: grid; gap: .45rem; }
-        .q-opt {
-            display: flex;
-            align-items: center;
-            gap: .7rem;
-            padding: .65rem .9rem;
-            border: 2px solid var(--border);
-            border-radius: 9px;
-            cursor: pointer;
-            transition: all .2s;
-            background: #f8fafc;
-            font-size: .85rem;
-            color: var(--text);
-        }
-        .q-opt:hover { border-color: #a5b4fc; }
-        .q-opt .rank-badge {
-            width: 28px; height: 28px;
+
+        /* Particles */
+        .debris {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ffd700;
             border-radius: 50%;
-            border: 2px dashed #d1d5db;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .72rem; font-weight: 700;
-            color: #9ca3af;
-            flex-shrink: 0;
-            transition: all .2s;
-        }
-        .q-opt.is-best  { border-color: var(--primary); background: #eef2ff; }
-        .q-opt.is-best  .rank-badge { background: var(--primary); border-color: var(--primary); color: white; }
-        .q-opt.is-worst { border-color: #fca5a5; background: #fff1f2; }
-        .q-opt.is-worst .rank-badge { background: #ef4444; border-color: #ef4444; color: white; }
-        .q-opt.is-mid   { border-color: #d1d5db; background: #f9fafb; opacity: .75; }
-        .q-counter {
-            text-align: center;
-            padding: .75rem;
-            background: #f8fafc;
-            border-radius: 10px;
-            font-size: .82rem;
-            color: var(--text-light);
-            margin-top: 1rem;
-        }
-        .q-counter strong { color: var(--primary); }
-
-        /* ── BUTTONS ── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: .5rem;
-            padding: .85rem 2rem;
-            border-radius: 12px;
-            font-size: .95rem;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            transition: all .2s;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
-            color: white;
-            box-shadow: 0 4px 16px rgba(99,102,241,.35);
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(99,102,241,.45); }
-        .btn-primary:disabled { opacity: .45; pointer-events: none; }
-        .btn-ghost { background: transparent; color: var(--text-light); border: 2px solid var(--border); }
-        .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
-        .btn-full { width: 100%; }
-        .btn-row { display: flex; gap: .75rem; margin-top: 1.5rem; align-items: center; }
-        .btn-row .btn-primary { flex: 1; }
-
-        /* ── RESULTS ── */
-        #resultSection { display: none; }
-        .result-hero {
-            background: linear-gradient(135deg, #1a1a2e, #0f3460);
-            border-radius: var(--radius);
-            padding: 2.5rem;
-            text-align: center;
-            color: white;
-            margin-bottom: 1.5rem;
-        }
-        .result-hero h2 { font-size: 1.6rem; font-weight: 900; margin-bottom: .5rem; }
-        .result-hero p { color: #94a3b8; font-size: .9rem; }
-        .result-riasec {
-            display: inline-flex;
-            gap: .5rem;
-            margin-top: 1rem;
-        }
-        .riasec-pill {
-            background: rgba(99,102,241,.25);
-            border: 1px solid rgba(99,102,241,.5);
-            color: #a5b4fc;
-            padding: .35rem .9rem;
-            border-radius: 50px;
-            font-size: .82rem;
-            font-weight: 700;
+            pointer-events: none;
+            z-index: 50;
+            box-shadow: 0 0 12px #ffaa00;
         }
 
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-        @media (max-width: 600px) { .result-grid { grid-template-columns: 1fr; } }
-
-        .result-card {
-            background: white;
-            border-radius: var(--radius);
+        /* ── Panel / Question Area ── */
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
             padding: 1.5rem;
-            box-shadow: var(--shadow);
+            padding-bottom: env(safe-area-inset-bottom, 1.5rem);
+            display: flex;
+            flex-direction: column;
+            min-height: 45vh;
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .result-card h3 {
-            font-size: .85rem;
-            font-weight: 700;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: .05em;
+
+        .q-title {
+            font-size: 1.15rem;
+            font-weight: 900;
+            margin-bottom: 0.3rem;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .q-desc {
+            font-size: 1.05rem;
+            color: #a1a1aa;
             margin-bottom: 1rem;
+            line-height: 1.4;
         }
-        .top-group-item {
+
+        .q-opts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
+        }
+
+        .q-opts.grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-rows: min-content;
+        }
+
+        .opt-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+            justify-content: center;
             display: flex;
             align-items: center;
-            gap: .75rem;
-            padding: .75rem 0;
-            border-bottom: 1px solid var(--border);
+            gap: 0.5rem;
+            transition: all 0.2s;
+            line-height: 1.3;
+            flex-wrap: wrap;
+            min-height: 3.5rem;
         }
-        .top-group-item:last-child { border-bottom: none; }
-        .rank-icon { font-size: 1.4rem; flex-shrink: 0; }
-        .group-info { flex: 1; }
-        .group-name { font-size: .95rem; font-weight: 700; color: var(--text); }
-        .group-score { font-size: .75rem; color: var(--text-light); margin-top: .1rem; }
-        .score-bar-bg { background: var(--border); border-radius: 50px; height: 4px; margin-top: .4rem; }
-        .score-bar-fill { height: 100%; border-radius: 50px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
 
-        /* Gap Analysis */
-        .gap-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-        .gap-table th { text-align: left; padding: .5rem .4rem; color: var(--text-light); font-weight: 600; border-bottom: 2px solid var(--border); }
-        .gap-table td { padding: .55rem .4rem; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
-        .stars { color: #fbbf24; letter-spacing: -.05em; }
-        .gap-tag {
-            display: inline-block;
-            font-size: .68rem;
-            font-weight: 700;
-            padding: .15rem .5rem;
-            border-radius: 50px;
+        .opt-btn:active {
+            transform: scale(0.97);
+            background: rgba(255, 255, 255, 0.15);
         }
-        .gap-match  { background: #d1fae5; color: #065f46; }
-        .gap-ok     { background: #e0f2fe; color: #0369a1; }
-        .gap-warn   { background: #fef3c7; color: #92400e; }
-        .gap-strong { background: #ede9fe; color: #5b21b6; }
 
-        /* Action Cards */
-        .action-cards { display: grid; gap: .75rem; }
-        .action-card {
-            border-radius: 12px;
-            padding: 1.1rem 1.25rem;
+        .opt-btn.sel {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.15);
+        }
+
+        .opt-btn.sel-best {
+            border-color: #34d399;
+            background: rgba(52, 211, 153, 0.15);
+        }
+
+        .opt-btn.sel-worst {
+            border-color: #f87171;
+            background: rgba(248, 113, 113, 0.15);
+        }
+
+        .opt-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .scenario-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #52525b;
             display: flex;
-            gap: .9rem;
-            align-items: flex-start;
-        }
-        .action-card.today  { background: linear-gradient(135deg, #eef2ff, #ede9fe); border-left: 4px solid var(--primary); }
-        .action-card.month  { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-left: 4px solid var(--success); }
-        .action-card.year   { background: linear-gradient(135deg, #fff7ed, #fef3c7); border-left: 4px solid var(--warning); }
-        .action-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: .1rem; }
-        .action-title { font-size: .75rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: .05em; }
-        .action-content { font-size: .85rem; color: var(--text); margin-top: .25rem; line-height: 1.5; }
-
-        /* Clarity message */
-        .clarity-message {
-            background: linear-gradient(135deg, #ede9fe, #e0f2fe);
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1rem;
-            font-size: .9rem;
-            color: #1e293b;
-            line-height: 1.7;
-        }
-        .clarity-message .label { font-weight: 700; color: var(--primary); margin-bottom: .35rem; }
-
-        /* Career tags */
-        .career-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
-        .career-tag { background: #eef2ff; color: var(--primary); border-radius: 50px; padding: .2rem .65rem; font-size: .72rem; font-weight: 600; }
-
-        /* Chart canvas */
-        .chart-wrap { position: relative; height: 220px; }
-
-        /* Loading */
-        #loading-overlay {
-            display: none;
-            position: fixed; inset: 0;
-            background: rgba(15,23,42,.85);
-            z-index: 999;
             align-items: center;
             justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: #52525b;
+            flex-shrink: 0;
+        }
+
+        .opt-btn.sel-best .scenario-badge {
+            border-color: #34d399;
+            background: #34d399;
+            color: #000;
+        }
+
+        .opt-btn.sel-worst .scenario-badge {
+            border-color: #f87171;
+            background: #f87171;
+            color: #000;
+        }
+
+        /* ── Result Screen ── */
+        #screen-result {
+            background: #000;
+            justify-content: flex-start;
+            padding-bottom: 3rem;
+        }
+
+        .monster-img-wrap {
+            width: 100%;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .monster-img {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.4);
+        }
+
+        .result-ui {
+            position: relative;
+            display: flex;
             flex-direction: column;
-            gap: 1rem;
-        }
-        #loading-overlay.show { display: flex; }
-        .loader {
-            width: 48px; height: 48px;
-            border: 4px solid rgba(255,255,255,.2);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #loading-overlay p { color: #94a3b8; font-size: .9rem; }
-
-        /* ── LOCK / PREMIUM CONTENT ── */
-        .locked-wrap { position: relative; }
-        .locked-content { filter: blur(6px); pointer-events: none; user-select: none; transition: filter .5s ease; opacity: 0.7; }
-        .locked-wrap.unlocked .locked-content { filter: blur(0); pointer-events: all; user-select: auto; opacity: 1; }
-        .locked-overlay {
-            position: absolute; inset: 0; z-index: 10;
-            display: flex; align-items: flex-start; justify-content: center;
-            padding-top: 3rem;
-            background: rgba(255,255,255,0.4);
-            backdrop-filter: blur(2px);
-        }
-        .locked-wrap.unlocked .locked-overlay { display: none; }
-        .unlock-card {
-            background: white; border-radius: 16px; padding: 2rem 1.5rem; max-width: 420px; width: 90%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 2px solid var(--primary);
-            text-align: center; animation: fadeUp .5s ease forwards;
-        }
-        .unlock-card h3 { font-size: 1.25rem; font-weight: 900; color: var(--primary); margin-bottom: .75rem; }
-        .unlock-card p { font-size: .88rem; color: var(--text); line-height: 1.6; margin-bottom: 1.25rem; }
-        .unlock-input {
-            width: 100%; padding: .85rem 1rem; border: 2px solid var(--border); border-radius: 10px;
-            font-size: .95rem; margin-bottom: 1rem; transition: border-color .2s; outline: none;
-        }
-        .unlock-input:focus { border-color: var(--primary); }
-        .unlock-card small { display: block; font-size: .7rem; color: var(--text-light); margin-top: .85rem; }
-
-        /* ── RESPONSIVE ── */
-
-        /* Tablet (768px) */
-        @media (max-width: 768px) {
-            .hero { padding: 2.5rem 1rem 3rem; }
-            .hero-stats { gap: 1.25rem; }
-            .result-grid { grid-template-columns: 1fr; }
-            .section-body { padding: 1.25rem; }
+            padding: 0 1.5rem;
         }
 
-        /* Large Mobile (600px) */
-        @media (max-width: 600px) {
-            .clarity-cards { grid-template-columns: 1fr; }
-            .ability-item { flex-wrap: wrap; gap: .5rem; }
-            .ability-choices { width: 100%; justify-content: stretch; }
-            .choice-btn { flex: 1; text-align: center; }
-            .q-opt { flex-wrap: wrap; }
-            .q-opt span { flex: 1; min-width: 0; }
-            .btn-row { flex-direction: column; }
-            .btn-row .btn-ghost { width: 100%; }
-            .result-hero { padding: 1.75rem 1.25rem; }
-            .result-hero h2 { font-size: 1.3rem; }
+        .result-actions {
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: env(safe-area-inset-bottom, 1rem);
         }
 
-        /* Small Mobile (480px) */
-        @media (max-width: 480px) {
-            .content { padding: 1.25rem .75rem 3rem; }
-            .hero h1 { font-size: 1.6rem; }
-            .hero-stats { flex-direction: column; gap: .75rem; align-items: center; }
-            .grade-grid { grid-template-columns: repeat(4, 1fr); }
-            .grade-btn { font-size: .75rem; padding: .6rem .25rem; }
-            .section-header { padding: 1.25rem 1.25rem 1rem; }
-            .q-card { padding: 1rem; }
-            .q-card-header { gap: .5rem; }
-            .q-title { font-size: .85rem; }
-            .value-opt { padding: .65rem .75rem; }
-            .gap-table { font-size: .75rem; }
-            .action-card { padding: .9rem 1rem; }
-            .result-card { padding: 1.1rem; }
+        .btn-share,
+        .btn-email {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 900;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-share {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+        }
+
+        .btn-email {
+            background: linear-gradient(135deg, #a855f7, #6b21a8);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-share:active,
+        .btn-email:active {
+            transform: scale(0.97);
+        }
+
+        /* Email Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: flex-end;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: #18181b;
+            width: 100%;
+            padding: 2rem 1.5rem;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding-bottom: max(2rem, env(safe-area-inset-bottom));
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .modal-desc {
+            font-size: 0.85rem;
+            color: #a1a1aa;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .email-input {
+            width: 100%;
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 12px;
+            padding: 1rem;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+
+        .email-input:focus {
+            border-color: #a855f7;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50px);
+            background: #fff;
+            color: #000;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transition: transform 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
         }
     </style>
 </head>
+
 <body>
 
-<!-- Loading Overlay -->
-<div id="loading-overlay">
-    <div class="loader"></div>
-    <p>正在分析你的三維度數據…</p>
-</div>
+    <div class="toast" id="toast"></div>
 
-<!-- Hero -->
-<div class="hero">
-    <div class="hero-badge">🧭 職涯羅盤 2.0 — 為迷茫的你而設計</div>
-    <h1>不是給你一個<span>答案</span><br>而是幫你找到<span>方向</span></h1>
-    <p>結合興趣、能力、價值觀三個維度，在你完成問卷後，給出你能立刻去做的具體下一步。</p>
-    <div class="hero-stats">
-        <div class="hero-stat"><span>3 個維度</span>興趣 × 能力 × 價值觀</div>
-        <div class="hero-stat"><span>約15分鐘</span>完成全部問卷</div>
-        <div class="hero-stat"><span>個人化</span>依你的迷茫程度分層輸出</div>
-    </div>
-</div>
+    <!-- ================= AUDIO ================= -->
+    <audio id="bgm" src="background.mp3" loop></audio>
 
-<!-- Progress Bar -->
-<div class="progress-wrap" id="progressWrap">
-    <div class="progress-info">
-        <span id="progressLabel">準備開始</span>
-        <span id="progressPct">0%</span>
-    </div>
-    <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
-    </div>
-</div>
-
-<!-- Main Content -->
-<div class="content">
-
-    <!-- ── STEP 0: ONBOARDING ── -->
-    <div class="step-section active" id="step0">
-        <div class="section-header">
-            <div class="badge">STEP 0 / 4 — 認識你</div>
-            <h2>先讓我認識你一下 👋</h2>
-            <p>這些資訊用於個人化你的結果，不影響計分方式。</p>
-        </div>
-        <div class="section-body">
-            <p style="font-size:.9rem; font-weight:700; color:var(--text); margin-bottom:.5rem;">你目前就讀：</p>
-            <div class="grade-grid" id="gradeGrid">
-                <button class="grade-btn" data-grade="國一">國一</button>
-                <button class="grade-btn" data-grade="國二">國二</button>
-                <button class="grade-btn" data-grade="國三">國三</button>
-                <button class="grade-btn" data-grade="高一">高一</button>
-                <button class="grade-btn" data-grade="高二">高二</button>
-                <button class="grade-btn" data-grade="高三">高三</button>
-                <button class="grade-btn" data-grade="高職">高職</button>
-                <button class="grade-btn" data-grade="其他">其他</button>
-            </div>
-
-            <p style="font-size:.9rem; font-weight:700; color:var(--text); margin: 1.25rem 0 .5rem;">對未來，你現在的感受是：</p>
-            <div class="clarity-cards" id="clarityCards">
-                <div class="clarity-card" data-clarity="1">
-                    <div class="emoji">😵</div>
-                    <div class="label">完全沒有概念</div>
-                    <div class="sublabel">根本不知道自己要什麼</div>
-                </div>
-                <div class="clarity-card" data-clarity="2">
-                    <div class="emoji">🤔</div>
-                    <div class="label">有一點想法</div>
-                    <div class="sublabel">但不確定是不是真的</div>
-                </div>
-                <div class="clarity-card" data-clarity="3">
-                    <div class="emoji">🙂</div>
-                    <div class="label">有幾個方向</div>
-                    <div class="sublabel">需要確認哪個更適合</div>
-                </div>
-                <div class="clarity-card" data-clarity="4">
-                    <div class="emoji">😎</div>
-                    <div class="label">目標明確</div>
-                    <div class="sublabel">想驗證自己的選擇</div>
-                </div>
-            </div>
-
-            <button class="btn btn-primary btn-full" id="btnStep0" onclick="goToStep(1)" disabled>
-                開始第一關：找到你的核心價值 →
-            </button>
-        </div>
+    <!-- ================= INTRO ================= -->
+    <div class="app-container screen active" id="screen-home">
+        <img src="pic/hero.webp" class="hero-img" alt="Hero">
+        <button class="hero-cta" onclick="startGame()">覺醒內在怪物!!</button>
     </div>
 
-    <!-- ── STEP 1: VALUES ── -->
-    <div class="step-section" id="step1">
-        <div class="section-header">
-            <div class="badge">STEP 1 / 4 — 工作價值觀</div>
-            <h2>你在工作中最在乎什麼？🧠</h2>
-            <p>先搞清楚你的「工作價值觀」，才能找到真正適合你的方向，而不只是熱門的選擇。</p>
-        </div>
-        <div class="section-body">
-            <!-- Values Q1 -->
-            <div class="value-q">
-                <h3>Q1. 20年後，你最希望哪一種說法能描述你的工作？<small style="color:var(--text-light);font-size:.78rem;"> (選2個)</small></h3>
-                <div class="value-options" id="vq1">
-                    <div class="value-opt" data-q="vq1" data-val="achieve" onclick="selectValue('vq1',this,2)"><span class="opt-emoji">🏆</span><span class="opt-text">「你做的事情，很多人因此過得更好了」（成就）</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq1" data-val="help" onclick="selectValue('vq1',this,2)"><span class="opt-emoji">🤝</span><span class="opt-text">「沒有你，很多人不知道怎麼辦才好」（助人）</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq1" data-val="create" onclick="selectValue('vq1',this,2)"><span class="opt-emoji">🎨</span><span class="opt-text">「你的作品讓我驚豔，很有你自己的風格」（創造）</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq1" data-val="explore" onclick="selectValue('vq1',this,2)"><span class="opt-emoji">🔬</span><span class="opt-text">「你解決了一個沒有人解過的問題」（探索）</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq1" data-val="stable" onclick="selectValue('vq1',this,2)"><span class="opt-emoji">🌱</span><span class="opt-text">「你生活穩定舒適，讓家人完全放心」（安全）</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq1" data-val="impact" onclick="selectValue('vq1',this,2)"><span class="opt-emoji">🌏</span><span class="opt-text">「因為你的工作，社會變得更公平更好」（影響）</span><span class="opt-badge">✓ 已選</span></div>
-                </div>
-            </div>
-            <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;">
-            <!-- Values Q2 -->
-            <div class="value-q">
-                <h3>Q2. 如果以下問題在你工作中發生，哪個最讓你崩潰？<small style="color:var(--text-light);font-size:.78rem;"> (選1個)</small></h3>
-                <div class="value-options" id="vq2">
-                    <div class="value-opt" data-q="vq2" data-val="explore" onclick="selectValue('vq2',this,1)"><span class="opt-emoji">😤</span><span class="opt-text">做一樣的事好幾年了，完全沒有新的挑戰</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq2" data-val="help" onclick="selectValue('vq2',this,1)"><span class="opt-emoji">😞</span><span class="opt-text">努力工作，但完全感覺不到自己在幫助任何人</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq2" data-val="create" onclick="selectValue('vq2',this,1)"><span class="opt-emoji">😓</span><span class="opt-text">工作沒有任何創意空間，全部照規定做</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq2" data-val="achieve" onclick="selectValue('vq2',this,1)"><span class="opt-emoji">😔</span><span class="opt-text">努力了好久，卻完全看不到任何具體成果</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq2" data-val="stable" onclick="selectValue('vq2',this,1)"><span class="opt-emoji">😰</span><span class="opt-text">收入不穩定，永遠不知道下個月有沒有錢</span><span class="opt-badge">✓ 已選</span></div>
-                    <div class="value-opt" data-q="vq2" data-val="impact" onclick="selectValue('vq2',this,1)"><span class="opt-emoji">😟</span><span class="opt-text">工作對社會毫無意義，甚至可能有一點點害處</span><span class="opt-badge">✓ 已選</span></div>
-                </div>
-            </div>
-            <div class="btn-row">
-                <button class="btn btn-ghost" onclick="goToStep(0)">← 上一步</button>
-                <button class="btn btn-primary" id="btnStep1" onclick="goToStep(2)" disabled>下一步：能力自評 →</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── STEP 2: ABILITIES ── -->
-    <div class="step-section" id="step2">
-        <div class="section-header">
-            <div class="badge">STEP 2 / 4 — 能力自評</div>
-            <h2>你在哪些事情上是有天賦的？💪</h2>
-            <p>誠實是最重要的——說「不擅長」和「擅長」一樣有用，都能幫你更精準地找到方向。</p>
-        </div>
-        <div class="section-body">
-            <div class="ability-grid" id="abilityGrid"></div>
-            <div class="q-counter" id="abilityCounter" style="margin-top:.75rem;">已評分 <strong id="abilityDone">0</strong> / <strong>24</strong> 項能力</div>
-            <div class="btn-row">
-                <button class="btn btn-ghost" onclick="goToStep(1)">← 上一步</button>
-                <button class="btn btn-primary" id="btnStep2" onclick="goToStep(3)" disabled>下一步：情境問卷 →</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── STEP 3: SCENARIOS ── -->
-    <div class="step-section" id="step3">
-        <div class="section-header">
-            <div class="badge">STEP 3 / 4 — 情境問卷</div>
-            <h2>換個情境，看看你的本能反應 🎯</h2>
-            <p>每題請先點選「最符合你的選項」，再點選「最不符合你的選項」。</p>
-        </div>
-        <div class="section-body">
-            <div class="scenario-hint">
-                <span>💡</span>
-                <span>每題點 <strong>2次</strong>：第1次選「你最想做的那個」，第2次選「你最不想做的那個」。憑直覺作答，不要想太多！ · <em>已作答的題目可再點任一選項重置</em></span>
-            </div>
-            <div id="scenarioQuestions"></div>
-            <div class="q-counter">已完成 <strong id="doneCount">0</strong> / <strong>20</strong> 題</div>
-            <div class="btn-row">
-                <button class="btn btn-ghost" onclick="goToStep(2)">← 上一步</button>
-                <button class="btn btn-primary" id="btnStep3" onclick="calculateAndShow()" disabled>查看我的職涯羅盤 🧭</button>
-            </div>
-        </div>
-    </div>
-
-</div><!-- end .content -->
-
-<!-- ── RESULTS ── -->
-<div id="resultSection">
-    <div class="content">
-        <div class="result-hero">
-            <h2 id="resTitle">你的職涯羅盤</h2>
-            <p id="resSubtitle">根據你的興趣 × 能力 × 價值觀三個維度綜合分析</p>
-            <div class="result-riasec" id="resRiasec"></div>
-        </div>
-
-        <!-- Clarity message -->
-        <div class="clarity-message" id="clarityMsg"></div>
-
-        <button class="btn btn-primary btn-full" onclick="generateMonsterCard()" style="margin-bottom: 2rem; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #78350f; box-shadow: 0 4px 15px rgba(245,158,11,0.4); border: 2px solid #fff;">
-            ✨ 生成我的「專屬怪物卡牌」 (可分享至 IG) ✨
-        </button>
-
-        <!-- TOP 3 + Chart -->
-        <div class="result-grid">
-            <div class="result-card">
-                <h3>🏆 你的命定學群 TOP 3</h3>
-                <div id="topGroupsOutput"></div>
-            </div>
-            <div class="result-card">
-                <h3>📊 RIASEC 人格輪廓</h3>
-                <div class="chart-wrap"><canvas id="riasecChart"></canvas></div>
-                <div id="riasecDesc" style="margin-top:.75rem;font-size:.71rem;color:var(--text-light);line-height:1.75;display:grid;grid-template-columns:1fr 1fr;gap:.05rem .5rem;"></div>
-            </div>
-        </div>
-
-        <!-- PREMIUM CONTENT LOCK -->
-        <div class="locked-wrap" id="premiumWrap">
-            <div class="locked-overlay">
-                <div class="unlock-card">
-                    <h3>🔒 解鎖專屬深度分析</h3>
-                    <p>最關鍵的「能力落差分析」與「下一步行動計畫」已生成！<br>請輸入您的 Email，系統將寄送完整報告備份給您，並立即解鎖下方內容。</p>
-                    <input type="email" id="userEmailInput" class="unlock-input" placeholder="請輸入您的 Email" required>
-                    <button class="btn btn-primary" style="width:100%" onclick="submitEmailUnlock()" id="unlockBtn">📨 寄送備份並解鎖報告 →</button>
-                    <small>※ 隱私聲明：點擊即表示同意本測驗以匿名方式蒐集數據</small>
-                </div>
-            </div>
-            <div class="locked-content">
-
-        <!-- Gap Analysis -->
-        <div class="result-card" id="gapCard" style="margin-bottom:1rem;">
-            <h3>🔍 興趣 × 能力 交叉分析</h3>
-            <p style="font-size:.8rem;color:var(--text-light);margin-bottom:.75rem;">看看你的熱情和你的能力有沒有對齊——這是最容易被忽略卻最重要的一步。</p>
-            <div style="overflow-x:auto;"><table class="gap-table" id="gapTable"></table></div>
-        </div>
-
-        <!-- Ipsative Reminder -->
-        <div class="result-card" style="margin-bottom:1rem; background: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #f59e0b;">
-            <h3 style="color:#b45309; margin-bottom:.5rem;">💡 給你的特別提醒：這是「內部優勢比較」</h3>
-            <p style="font-size:.85rem; color:#78350f; line-height:1.6;">
-                這份報告顯示的是你<strong>「自己和自己比」</strong>的內部熱情與能力排序，
-                某個學群分數較低，不代表你那方面「比別人差」或「沒有救」，
-                而是相較於你自身，你有更想優先投入、更具優勢的其他領域！
-            </p>
-        </div>
-
-        <!-- Career Suggestions & Action Cards -->
-        <div class="result-grid">
-            <div class="result-card">
-                <h3>💼 適合的職涯方向</h3>
-                <div id="careerOutput"></div>
-            </div>
-            <div class="result-card">
-                <h3>📌 下一步行動計畫</h3>
-                <div class="action-cards" id="actionOutput"></div>
-            </div>
-        </div>
-
-        <!-- Subject Weights -->
-        <div class="result-card" id="subjectCard" style="margin-bottom:1rem;">
-            <h3>📚 參採科目比重參考（TOP 3 學群）</h3>
-            <p style="font-size:.8rem;color:var(--text-light);margin-bottom:.75rem;">參採率：這個學群下有多少比例的科系會納入此科目的學測成績。</p>
-            <div id="subjectOutput" style="display:grid;gap:.75rem;"></div>
-        </div>
-
-            </div> <!-- end locked-content -->
-        </div> <!-- end premiumWrap -->
-
-        <div style="text-align:center;padding:1rem 0 2rem;">
-            <button class="btn btn-ghost" onclick="restart()" style="margin-right:.75rem;">🔄 重新測驗</button>
-            <button class="btn btn-primary" onclick="window.print()">🖨 列印結果</button>
-        </div>
-    </div>
-</div>
-
-<!-- Card Generator Modal -->
-<div id="cardGeneratorModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; padding:1.5rem;">
-    <h3 style="color:white; margin-bottom:1rem; font-weight:800; text-align:center; font-size:1.1rem;">✨ 長按圖片儲存您的怪物圖鑑卡 👇</h3>
-    <div id="generatedCardContainer" style="border-radius:18px; overflow:hidden; box-shadow:0 0 40px rgba(251,191,36,0.25); max-width: 380px; width:100%;"></div>
-    <div style="font-size:.8rem; color:#94a3b8; margin-top:.75rem;">可直接發布至 IG 測驗限動！</div>
-    <button class="btn btn-ghost" style="margin-top:1.5rem; background:white; color:var(--bg);" onclick="document.getElementById('cardGeneratorModal').style.display='none'">關閉視窗</button>
-</div>
-
-<!-- Hidden Canvas Target -->
-<div id="cardTemplateWrap" style="position:fixed; left:-9999px; top:0; z-index:-1;">
-    <div id="monsterCard" style="width: 380px; height: 676px; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 20px; padding: 18px; border: 12px solid #cbd5e1; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; position: relative;">
+    <!-- ================= GAME LOOP ================= -->
+    <div class="app-container screen" id="screen-game">
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div style="color: white; font-weight: 800; font-size: 1.3rem; display: flex; align-items:center; gap: 8px;">
-                <span id="cardRarity" style="background:#fbbf24; color:#78350f; padding:3px 10px; border-radius:6px; font-size:0.9rem;">SSR</span>
-                <span id="cardTitle">代碼寄生獸</span>
+        <div class="header">
+            <div class="progress-wrap">
+                <div class="progress-fill" id="progFill"></div>
             </div>
-            <div style="color: #ef4444; font-weight: 900; font-size: 1.3rem;">HP <span id="cardScore">98</span></div>
+            <div class="progress-text" id="progText">覺醒進度 0%</div>
         </div>
 
-        <!-- Image Area -->
-        <div style="width: 100%; height: 280px; background: #fff; border: 4px solid #94a3b8; border-radius: 8px; overflow: hidden; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; position:relative;">
-            <!-- Fallback text -->
-            <div id="cardFallbackText" style="position:absolute; color:#94a3b8; font-weight:700; z-index:1;">[等待怪獸圖像釋出中]</div>
-            <img id="cardImage" src="" style="width: 100%; height: 100%; object-fit: cover; position:relative; z-index:2; display:none;" onload="this.style.display='block';">
-        </div>
-
-        <!-- Quote Area -->
-        <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
-            <div style="color: #a5b4fc; font-weight: 800; font-size: 0.9rem; margin-bottom: 6px;">🗡️ 怪物本能</div>
-            <div id="cardQuote" style="color: white; font-size: 0.85rem; line-height: 1.6; font-weight: 400;">你不是不想聽人講話，你只是覺得直接跟機器溝通比較不會中風。</div>
-        </div>
-
-        <!-- Best Matches -->
-        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
-            <div style="background: rgba(16, 185, 129, 0.15); border-left: 4px solid #10b981; padding: 10px; border-radius: 0 8px 8px 0;">
-                <div style="color: #10b981; font-weight: 800; font-size: 0.8rem; margin-bottom: 2px;">🟢 天菜神隊友 (職涯互補)</div>
-                <div id="cardBestMatch" style="color: white; font-size: 0.85rem; font-weight: 500;">設計學群、藝術學群</div>
-            </div>
-            <div style="background: rgba(239, 68, 68, 0.15); border-left: 4px solid #ef4444; padding: 10px; border-radius: 0 8px 8px 0;">
-                <div style="color: #ef4444; font-weight: 800; font-size: 0.8rem; margin-bottom: 2px;">🔴 絕不合拍 (理念互斥)</div>
-                <div id="cardWorstMatch" style="color: white; font-size: 0.85rem; font-weight: 500;">法政學群</div>
+        <!-- Egg Render -->
+        <div class="egg-area" id="eggArea">
+            <div class="egg-container" id="eggContainer">
+                <img src="egg.png" class="egg-img" id="eggImg">
+                <svg class="egg-svg-cracks" viewBox="0 0 200 200" id="eggCracks">
+                    <!-- Cracks will be generated here -->
+                </svg>
             </div>
         </div>
 
-        <!-- Footer -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; position: absolute; bottom: 18px; left: 18px; right: 18px;">
-            <div style="font-size: 0.75rem; color: #94a3b8; line-height: 1.5; text-align: left;">
-                <strong style="color:white;">職場怪物圖鑑</strong><br>職涯羅盤 2.0
-            </div>
-            <div style="width: 50px; height: 50px; background: white; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size:0.6rem; color:#000; text-align:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                <div style="border:1px solid #1e293b; width: 44px; height: 44px; font-weight:900; line-height:1.2;">掃碼<br>測驗</div>
+        <!-- Dynamic Question Panel -->
+        <div class="panel" id="qPanel">
+            <div class="q-title" id="qTitle">Title</div>
+            <div class="q-desc" id="qDesc">Desc</div>
+            <div class="q-opts" id="qOpts"></div>
+        </div>
+    </div>
+
+    <!-- ================= RESULT/CARD ================= -->
+    <div class="app-container screen" id="screen-result">
+        <div class="monster-img-wrap">
+            <img src="" id="resMonsterImg" class="monster-img">
+        </div>
+        <div class="result-ui">
+            <div class="result-actions">
+                <!-- Native share if supported, or instruction to take screenshot -->
+                <button class="btn-share" onclick="shareIG()">發布到 IG / 儲存圖片</button>
+                <button class="btn-email" onclick="openEmail()">📨 寄送詳細能力落差分析給你</button>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-// ═══════════════════════════════════════════════════════
-//  DATA
-// ═══════════════════════════════════════════════════════
+    <!-- Email Modal -->
+    <div class="modal-overlay" id="emailModal" onclick="if(event.target===this)this.classList.remove('active')">
+        <div class="modal-content">
+            <div class="modal-title">解鎖專屬深度分析報告</div>
+            <div class="modal-desc">包含完整的 RIASEC 六型人格輪廓、適合科系能力差距分析與行動計畫。留下信箱，我們寄信給你備份收藏。</div>
+            <input type="email" class="email-input" id="emailInput" placeholder="輸入你的 Email">
+            <button class="btn-email" id="btnSendEmail" onclick="submitEmail()">確認送出</button>
+        </div>
+    </div>
 
-const GROUPS = [
-    '資訊學群','工程學群','數理化學學群','醫藥衛教學群','生命科學學群','生物資源學群',
-    '地球與環境學群','大眾傳播學群','藝術學群','建築與設計學群','文史哲學群','外語學群',
-    '財經學群','管理學群','法政學群','社會與心理學群','教育學群','遊憩與運動學群'
-];
 
-// RIASEC mapping
-const RIASEC = {
-    R: ['工程學群','生物資源學群','遊憩與運動學群'],
-    I: ['數理化學學群','生命科學學群','地球與環境學群'],
-    A: ['藝術學群','大眾傳播學群','建築與設計學群'],
-    S: ['教育學群','社會與心理學群','醫藥衛教學群'],
-    E: ['管理學群','財經學群','法政學群'],
-    C: ['資訊學群','外語學群','文史哲學群']
-};
-const RIASEC_LABELS = { R:'現實型', I:'研究型', A:'藝術型', S:'社會型', E:'企業型', C:'傳統型' };
-
-// Work Values → groups
-const VALUES_MAP = {
-    achieve: { label:'成就感', emoji:'🏆', groups: ['工程學群','醫藥衛教學群','管理學群','財經學群'] },
-    help:    { label:'助人感', emoji:'🤝', groups: ['教育學群','社會與心理學群','醫藥衛教學群','生物資源學群'] },
-    create:  { label:'創造力', emoji:'🎨', groups: ['藝術學群','建築與設計學群','大眾傳播學群','文史哲學群'] },
-    explore: { label:'智識探索', emoji:'🔬', groups: ['數理化學學群','生命科學學群','地球與環境學群','資訊學群'] },
-    stable:  { label:'穩定安全', emoji:'🌱', groups: ['財經學群','法政學群','教育學群','管理學群'] },
-    impact:  { label:'社會領導', emoji:'🌏', groups: ['法政學群','社會與心理學群','管理學群','大眾傳播學群'] }
-};
-
-// Ability items
-const ABILITIES = [
-    { id:'logic',    label:'邏輯分析',  desc:'解題時能找到規律，思路比較清晰',       groups:{good:['數理化學學群','資訊學群','工程學群','法政學群'], avg:[]} },
-    { id:'writing',  label:'文字表達',  desc:'我寫的東西清楚有條理，常被人稱讚',     groups:{good:['文史哲學群','大眾傳播學群','外語學群','教育學群'], avg:[]} },
-    { id:'spatial',  label:'空間視覺',  desc:'能快速看出設計圖或空間配置的問題',     groups:{good:['建築與設計學群','藝術學群','工程學群'], avg:[]} },
-    { id:'math',     label:'數字直覺',  desc:'面對數字和統計，我能快速找到規律',     groups:{good:['數理化學學群','財經學群','資訊學群','工程學群'], avg:[]} },
-    { id:'empathy',  label:'同理傾聽',  desc:'朋友常找我談心，我能幫他梳理情緒',     groups:{good:['社會與心理學群','教育學群','醫藥衛教學群'], avg:[]} },
-    { id:'hands',    label:'動手實作',  desc:'喜歡動手修理或組裝東西，通常能成功',   groups:{good:['工程學群','生物資源學群','遊憩與運動學群'], avg:[]} },
-    { id:'memory',   label:'記憶背誦',  desc:'大量資料（英文單字、歷史年表）難不倒我',groups:{good:['醫藥衛教學群','外語學群','法政學群','文史哲學群'], avg:[]} },
-    { id:'aesthetic',label:'美感審美',  desc:'看到設計或排版，馬上能感覺到美不美',   groups:{good:['藝術學群','建築與設計學群','大眾傳播學群'], avg:[]} },
-    { id:'nature',   label:'生態觀察',  desc:'對動植物、生態環境很敏感、喜歡觀察',   groups:{good:['生命科學學群','生物資源學群','地球與環境學群'], avg:[]} },
-    { id:'organize', label:'組織規劃',  desc:'活動或任務，我習慣先想好流程與備案',   groups:{good:['管理學群','法政學群','教育學群','財經學群'], avg:[]} },
-    { id:'critical', label:'批判思考',  desc:'看到論點，我習慣質疑「有什麼漏洞？」', groups:{good:['法政學群','數理化學學群','社會與心理學群'], avg:[]} },
-    { id:'language', label:'語言直覺',  desc:'學習新語言時，語感抓得比一般人快',     groups:{good:['外語學群','大眾傳播學群','文史哲學群'], avg:[]} },
-    // --- 擴充題庫 (提升各維度信度) ---
-    { id:'leadership', label:'領導統御', desc:'小組討論時，我通常是那個分配工作、定方向的人', groups:{good:['管理學群','法政學群','教育學群','大眾傳播學群'], avg:[]} },
-    { id:'commercial', label:'商業洞察', desc:'看到一門生意，我會直覺去算它怎麼賺錢、成本多少', groups:{good:['財經學群','管理學群','資訊學群'], avg:[]} },
-    { id:'data_sense', label:'數據解析', desc:'看圖表或大量資料時，我能一眼抓到重點趨勢', groups:{good:['數理化學學群','財經學群','資訊學群','地球與環境學群'], avg:[]} },
-    { id:'machinery',  label:'機械靈感', desc:'我不怕複雜的機器介面，隨便摸一摸就知道怎麼操作', groups:{good:['工程學群','遊憩與運動學群','生物資源學群'], avg:[]} },
-    { id:'coding',     label:'演算法思維', desc:'做事喜歡先定好規則和步驟 (if 這個發生，then 就那樣做)', groups:{good:['資訊學群','數理化學學群','工程學群'], avg:[]} },
-    { id:'visual',     label:'影像直覺', desc:'對畫面排版、色彩搭配，我有一套自己的標準和堅持', groups:{good:['藝術學群','建築與設計學群','大眾傳播學群'], avg:[]} },
-    { id:'history',    label:'脈絡推敲', desc:'對於事件發生的「前因後果」歷史脈絡，我記憶力特別好', groups:{good:['文史哲學群','法政學群','社會與心理學群'], avg:[]} },
-    { id:'teaching',   label:'教學轉譯', desc:'教別人功課時，我也能換個簡單的方式讓他聽懂', groups:{good:['教育學群','社會與心理學群','醫藥衛教學群'], avg:[]} },
-    { id:'plants',     label:'戶外耐受', desc:'相比一直待在冷氣房，我在大自然或戶外雖然熱但更自在', groups:{good:['生物資源學群','地球與環境學群','遊憩與運動學群'], avg:[]} },
-    { id:'medical',    label:'生命科學', desc:'讀到人體構造、疾病、或者細胞原理時，我會覺得很有趣', groups:{good:['醫藥衛教學群','生命科學學群','生物資源學群'], avg:[]} },
-    { id:'negotiate',  label:'說服交涉', desc:'如果遇到不合理的規定，我能找到論點去說服大人改變', groups:{good:['法政學群','管理學群','大眾傳播學群'], avg:[]} },
-    { id:'patience',   label:'細節耐心', desc:'需要反覆確認、對齊格式這種枯燥的細節，我不會容易出錯', groups:{good:['外語學群','財經學群','工程學群'], avg:[]} }
-];
-
-// Scenario Questions (20)
-const SCENARIOS = [
-    { id:1, title:'社群媒體經營', options:[
-        {text:'拍攝並剪輯有特效的創意短影音',group:'大眾傳播學群'},
-        {text:'撰寫深度分析動漫或電影的影評',group:'文史哲學群'},
-        {text:'設計版面視覺與濾鏡，讓畫面更美觀',group:'藝術學群'},
-        {text:'開發自動回覆粉絲訊息的機器人程式',group:'資訊學群'}
-    ]},
-    { id:2, title:'舉辦大型電競比賽', options:[
-        {text:'規劃比賽場地的舞台動線與空間設計',group:'建築與設計學群'},
-        {text:'擔任賽事主播或導播，掌控現場氣氛',group:'大眾傳播學群'},
-        {text:'架設比賽用的伺服器與網路系統',group:'工程學群'},
-        {text:'計算門票收入與贊助商的財務報表',group:'財經學群'}
-    ]},
-    { id:3, title:'解決環境問題', options:[
-        {text:'研究能分解塑膠的新型細菌或酵素',group:'生命科學學群'},
-        {text:'設計一套全校性的垃圾分類教學課程',group:'教育學群'},
-        {text:'開發能自動夾取海洋垃圾的機械手臂',group:'工程學群'},
-        {text:'推動社區心理輔導，緩解氣候焦慮',group:'社會與心理學群'}
-    ]},
-    { id:4, title:'一日職人體驗', options:[
-        {text:'跟著醫生巡房，學習判讀病歷數據',group:'醫藥衛教學群'},
-        {text:'跟著健身教練學習人體肌肉運作原理',group:'遊憩與運動學群'},
-        {text:'跟著律師研究法條，撰寫訴訟狀',group:'法政學群'},
-        {text:'跟著會計師查核公司帳務與稅務',group:'財經學群'}
-    ]},
-    { id:5, title:'社團成果發表會', options:[
-        {text:'繪製活動海報與周邊商品設計圖',group:'藝術學群'},
-        {text:'擔任總召，負責協調各部門與控制預算',group:'管理學群'},
-        {text:'帶領大家去戶外採集植物標本並解說',group:'生物資源學群'},
-        {text:'負責撰寫活動的新聞稿與社群文案',group:'文史哲學群'}
-    ]},
-    { id:6, title:'自我進修選擇', options:[
-        {text:'學習攝影構圖與色彩學',group:'藝術學群'},
-        {text:'研究股票K線圖與投資理財知識',group:'財經學群'},
-        {text:'學習Python或C++程式語言',group:'資訊學群'},
-        {text:'學習第二外語（日韓德法西）',group:'外語學群'}
-    ]},
-    { id:7, title:'暑期實習', options:[
-        {text:'去醫院協助衛教宣導與長者照護',group:'醫藥衛教學群'},
-        {text:'去旅行社規劃生態旅遊路線',group:'遊憩與運動學群'},
-        {text:'去人資部門學習面試與員工訓練',group:'管理學群'},
-        {text:'去農場學習有機栽培與病蟲害防治',group:'生物資源學群'}
-    ]},
-    { id:8, title:'面對突發狀況', options:[
-        {text:'冷靜分析現有資源，擬定最佳解決路徑',group:'數理化學學群'},
-        {text:'先安撫大家的情緒，提供心理支持',group:'社會與心理學群'},
-        {text:'迅速利用手邊工具修理損壞的設備',group:'工程學群'},
-        {text:'擔任發言人，清楚對外說明狀況',group:'大眾傳播學群'}
-    ]},
-    { id:9, title:'最喜歡的閱讀題材', options:[
-        {text:'各國的歷史故事與古典文學',group:'文史哲學群'},
-        {text:'最新的科技雜誌與3C評測',group:'資訊學群'},
-        {text:'建築大師的作品集與室內設計雜誌',group:'建築與設計學群'},
-        {text:'探索宇宙奧秘與地質結構的書籍',group:'地球與環境學群'}
-    ]},
-    { id:10, title:'理想的工作環境', options:[
-        {text:'在實驗室裡專注研究，探索未知',group:'生命科學學群'},
-        {text:'在法庭或議會上，為正義辯護',group:'法政學群'},
-        {text:'在戶外大自然中，保育森林與動物',group:'生物資源學群'},
-        {text:'在跨國企業裡，使用外語溝通商務',group:'外語學群'}
-    ]},
-    { id:11, title:'你最容易一直追、停不下來的影片是？', options:[
-        {text:'大自然、野生動物、海洋宇宙探索的紀錄片（BBC、Discovery那類）',group:'地球與環境學群'},
-        {text:'運動賽事精華、球星傳記、奧運熱血故事',group:'遊憩與運動學群'},
-        {text:'創業家成功祕辛、商場投資、科技巨頭崛起故事',group:'財經學群'},
-        {text:'建築改造、室內設計、手作職人的幕後紀錄',group:'建築與設計學群'}
-    ]},
-    { id:12, title:'高中科展主題', options:[
-        {text:'探討不同洗手乳的殺菌效果',group:'醫藥衛教學群'},
-        {text:'利用程式模擬紅綠燈的最佳秒數',group:'資訊學群'},
-        {text:'自製天然染料並應用於布料',group:'藝術學群'},
-        {text:'研究校園土壤的酸鹼值與成分',group:'地球與環境學群'}
-    ]},
-    { id:13, title:'組隊競賽的角色', options:[
-        {text:'負責撰寫程式碼的核心開發者',group:'資訊學群'},
-        {text:'負責美編與簡報設計的設計師',group:'建築與設計學群'},
-        {text:'負責上台演講與說服評審的講者',group:'大眾傳播學群'},
-        {text:'負責團隊分工與進度管理的隊長',group:'管理學群'}
-    ]},
-    { id:14, title:'對什麼新聞最敏感？', options:[
-        {text:'某國通過重大人權法案',group:'法政學群'},
-        {text:'發現新的古文明遺跡或生物化石',group:'文史哲學群'},
-        {text:'央行宣布升息，股市大跌',group:'財經學群'},
-        {text:'諾貝爾化學獎得主的新發現',group:'數理化學學群'}
-    ]},
-    { id:15, title:'選修課選擇', options:[
-        {text:'運動傷害防護與急救',group:'遊憩與運動學群'},
-        {text:'生活中的化學反應',group:'數理化學學群'},
-        {text:'歐洲文化與外語會話',group:'外語學群'},
-        {text:'動物行為學',group:'生命科學學群'}
-    ]},
-    { id:16, title:'創業點子', options:[
-        {text:'創立一個手工藝品設計品牌',group:'藝術學群'},
-        {text:'開設一家結合心理諮商的咖啡廳',group:'社會與心理學群'},
-        {text:'成立一家生技公司研發新藥',group:'生命科學學群'},
-        {text:'創辦一家專門報導真相的獨立媒體',group:'大眾傳播學群'}
-    ]},
-    { id:17, title:'你對「數據」的看法', options:[
-        {text:'是訓練AI人工智慧的燃料',group:'資訊學群'},
-        {text:'是制定商業決策的重要依據',group:'財經學群'},
-        {text:'是用來驗證科學理論的證據',group:'數理化學學群'},
-        {text:'是分析社會現象與民意的工具',group:'社會與心理學群'}
-    ]},
-    { id:18, title:'週末活動安排', options:[
-        {text:'去參觀美術館或設計展',group:'藝術學群'},
-        {text:'去參加馬拉松或登山健行',group:'遊憩與運動學群'},
-        {text:'去圖書館看一整天的書',group:'文史哲學群'},
-        {text:'在家研究壞掉的電器、組裝東西',group:'工程學群'}
-    ]},
-    { id:19, title:'對學校制度的改善想法', options:[
-        {text:'修改不合理的校規，讓規定更公平',group:'法政學群'},
-        {text:'改善校園的空間規劃與視覺美感',group:'建築與設計學群'},
-        {text:'提升教學方法的趣味性與互動感',group:'教育學群'},
-        {text:'優化營養午餐的營養配比',group:'醫藥衛教學群'}
-    ]},
-    { id:20, title:'⭐ 放學後，你最常自發去做…', options:[
-        {text:'打開電腦寫程式、做設計，或研究新軟體工具',group:'資訊學群'},
-        {text:'看紀錄片或書，學某個讓我著迷的知識',group:'數理化學學群'},
-        {text:'練習畫畫、樂器、運動、料理等特定技能',group:'藝術學群'},
-        {text:'跟朋友聊天、幫他人解決問題，或組織大家做事',group:'社會與心理學群'}
-    ]},
-];
-
-// Career suggestions
-const CAREER_MAP = {
-    '資訊學群':'軟體工程師、AI科學家、資安專家、資料分析師',
-    '大眾傳播學群':'社群企劃、影音創作者、記者、品牌行銷',
-    '藝術學群':'視覺設計師、動畫師、策展人、UI/UX設計師',
-    '文史哲學群':'文案企劃、編輯、文化行政、出版、IP開發',
-    '建築與設計學群':'建築師、室內設計師、產品設計師、遊戲美術',
-    '財經學群':'精算師、會計師、金融分析師、FinTech工程師',
-    '地球與環境學群':'環境工程師、ESG顧問、氣象預報員、地質調查員',
-    '教育學群':'教師、企業培訓師、教育科技研發、家教平台',
-    '工程學群':'半導體工程師、機械工程師、電機技師、自動化',
-    '社會與心理學群':'諮商心理師、社工師、人資專員、高齡照護',
-    '醫藥衛教學群':'醫師、藥師、護理師、公共衛生、精準醫療',
-    '遊憩與運動學群':'運動防護員、健身教練、觀光企劃、運動科學',
-    '法政學群':'律師、司法官、公務員、民代助理、智財權',
-    '管理學群':'專案經理、行銷主管、創業家、電商經營',
-    '生物資源學群':'獸醫師、農業技師、食品安全、智慧農業',
-    '生命科學學群':'生技研發、疫苗研究員、基因編輯、細胞治療',
-    '外語學群':'口譯員、外交官、國際業務、在地化顧問',
-    '數理化學學群':'數據科學家、材料研發、統計學家、量子計算'
-};
-
-// Action cards per group
-const ACTION_MAP = {
-    '資訊學群':        {today:'在YouTube搜尋「台大資工系一日學生」，了解資訊系的真實生活',month:'完成Codecademy或CS50的Python入門課（免費）',year:'以數學A、英文為目標強化，參加全國資訊學科能力競賽'},
-    '工程學群':        {today:'搜尋「台灣工程師 一日工作Vlog」，看看機械/電機工程師在做什麼',month:'購買Arduino套件（約500元）動手做一個小電路實驗',year:'強化數學A和物理，了解工程相關大學的甄試條件'},
-    '數理化學學群':    {today:'觀看 3Blue1Brown 或 VESPA頻道的數學科普影片',month:'報名中研院或大學的高中生暑期科學研習營',year:'以數學A和自然科為核心，嘗試學科能力競賽備戰'},
-    '醫藥衛教學群':    {today:'搜尋「台灣住院醫師 日記」或「護理師的一天」確認你對這個環境的感受',month:'去醫院或診所擔任志工，實際感受醫療環境',year:'強化生物和化學，了解各醫學系的申請准入門檻'},
-    '生命科學學群':    {today:'觀看 SciShow 或科學月刊的生命科學科普影片',month:'申請大學生命科學系的高中生實驗室參訪活動',year:'以生物和化學為核心科目，準備科展或相關競賽'},
-    '生物資源學群':    {today:'觀看「農業部TV」或「獸醫的一天」相關影片',month:'去農場或動物收容所當志工，親身體驗環境',year:'強化生物和農業概論，探索農業大學的申請管道'},
-    '地球與環境學群':  {today:'安裝「PurpleAir」或「AirVisual」App，開始關注空氣品質數據',month:'參加荒野保護協會或台灣環境保護聯盟的志工活動',year:'以地科和化學為目標，了解永續發展相關科系'},
-    '大眾傳播學群':    {today:'挑一個你喜歡的話題，試著拍一支1分鐘短影音，不用很好',month:'加入學校廣播社、新聞社或YouTube頻道創作計畫',year:'準備作品集（影片/文章/IG），是許多傳播科系的備審重點'},
-    '藝術學群':        {today:'在Pinterest或Behance上建立自己的靈感資料夾',month:'報名一堂繪畫、攝影或平面設計的工作坊（實體或線上）',year:'開始累積作品集，藝術相關科系幾乎都需要術科考試'},
-    '建築與設計學群':  {today:'在YouTube搜尋「台灣建築師/設計師的日常」，了解真實的工作型態',month:'嘗試用SketchUp或Canva設計一個你理想的空間',year:'準備設計作品集，了解建築系術科考試的要求'},
-    '文史哲學群':      {today:'挑一本你感興趣的人文書，設定目標一個月看完',month:'參加讀書會、辯論社或到大學旁聽文學/哲學相關公開課',year:'以國文和社會科為核心，嘗試寫作投稿或文學相關競賽'},
-    '外語學群':        {today:'下載Duolingo，選一門你有興趣的語言，養成每天學習習慣',month:'找一個語言交換夥伴（HelloTalk App）進行真實對話練習',year:'以英文和第二外語為目標，準備語言能力認證（JLPT、DELF等）'},
-    '財經學群':        {today:'開一個模擬投資帳戶（CMoney或元大），學習追蹤股票',month:'閱讀《窮爸爸富爸爸》或《商業周刊》建立財金概念',year:'以數學B和英文為核心，了解商學院的申請條件'},
-    '管理學群':        {today:'嘗試組織一件事（即使只是朋友聚餐），練習規劃和協調',month:'閱讀《執行力》或 TED 演講：Simon Sinek「從為什麼開始」',year:'參加模擬聯合國、創業競賽或商業個案競賽，累積領導力經歷'},
-    '法政學群':        {today:'搜尋「台灣律師 一日工作」或觀看法庭紀實節目',month:'加入學校辯論社或模擬法庭活動',year:'以國文、英文、社會為核心，了解法律系和政治系的申請方式'},
-    '社會與心理學群':  {today:'觀看 TED 演講：Brené Brown 關於同理心（有中文字幕）',month:'嘗試擔任「傾聽志工」或加入學校輔導系統的小幫手',year:'以社會科和英文為核心，了解心理師執照的養成路徑'},
-    '教育學群':        {today:'回想你遇過最讓你印象深刻的老師，思考他為什麼有影響力',month:'去偏鄉陪讀機構當志工，感受「教學」的真實感',year:'了解師培大學申請條件，以及免費師培的機會'},
-    '遊憩與運動學群':  {today:'搜尋「運動科學家」或「運動防護員的一天」，了解職業面向',month:'考取初級救生員或CPR急救證照，是許多相關科系的加分項',year:'以體育術科和健康科學為核心，準備運動相關術科考試'},
-};
-
-// Subject weights (from original, used for reference)
-const SUBJECT_MAP = {
-    '資訊學群':{'國':53,'英':80,'數A':83,'數B':23,'社':3,'自':50},
-    '大眾傳播學群':{'國':93,'英':67,'數A':4,'數B':11,'社':44,'自':2},
-    '藝術學群':{'國':96,'英':70,'數A':1,'數B':4,'社':22,'自':0},
-    '文史哲學群':{'國':96,'英':64,'數A':5,'數B':22,'社':89,'自':0},
-    '建築與設計學群':{'國':95,'英':64,'數A':16,'數B':13,'社':35,'自':8},
-    '財經學群':{'國':86,'英':75,'數A':28,'數B':50,'社':40,'自':1},
-    '地球與環境學群':{'國':76,'英':79,'數A':76,'數B':13,'社':18,'自':79},
-    '教育學群':{'國':98,'英':82,'數A':12,'數B':51,'社':46,'自':2},
-    '工程學群':{'國':61,'英':82,'數A':94,'數B':8,'社':1,'自':73},
-    '社會與心理學群':{'國':89,'英':65,'數A':18,'數B':31,'社':60,'自':9},
-    '醫藥衛教學群':{'國':74,'英':91,'數A':54,'數B':6,'社':4,'自':83},
-    '遊憩與運動學群':{'國':90,'英':63,'數A':8,'數B':25,'社':40,'自':8},
-    '法政學群':{'國':91,'英':76,'數A':18,'數B':40,'社':87,'自':0},
-    '管理學群':{'國':83,'英':78,'數A':26,'數B':42,'社':34,'自':9},
-    '生物資源學群':{'國':82,'英':89,'數A':53,'數B':21,'社':0,'自':95},
-    '生命科學學群':{'國':55,'英':92,'數A':50,'數B':3,'社':0,'自':95},
-    '外語學群':{'國':92,'英':88,'數A':3,'數B':13,'社':60,'自':0},
-    '數理化學學群':{'國':45,'英':81,'數A':91,'數B':2,'社':0,'自':79}
-};
-
-// ═══════════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════════
-const state = {
-    grade: null,
-    clarity: null,
-    values: { vq1: [], vq2: [] },      // arrays of selected value ids
-    abilities: {},                      // {id: 'good'|'avg'|'weak'}
-    scenarioBest: {},                   // {qId: optIndex}
-    scenarioWorst: {},                  // {qId: optIndex}
-    currentStep: 0
-};
-
-// ═══════════════════════════════════════════════════════
-//  PROGRESS
-// ═══════════════════════════════════════════════════════
-const STEP_LABELS = ['工作價值觀', '能力自評', '情境問卷', '結果分析'];
-function updateProgress(step) {
-    const wrap = document.getElementById('progressWrap');
-    wrap.style.display = 'block';
-    const pct = step === 0 ? 0 : Math.round((step / 4) * 100);
-    const label = step === 0 ? 'STEP 0/4 — 認識你（開始前）' : `STEP ${step}/4 — ${STEP_LABELS[step-1]}`;
-    document.getElementById('progressLabel').textContent = label;
-    document.getElementById('progressPct').textContent = pct + '%';
-    document.getElementById('progressFill').style.width = pct + '%';
-}
-
-// ═══════════════════════════════════════════════════════
-//  NAVIGATION
-// ═══════════════════════════════════════════════════════
-function goToStep(step) {
-    document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
-    const el = document.getElementById('step' + step);
-    if (el) { el.classList.add('active'); }
-    document.getElementById('resultSection').style.display = 'none';
-    state.currentStep = step;
-    updateProgress(step);
-    window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-// ═══════════════════════════════════════════════════════
-//  ONBOARDING HANDLERS
-// ═══════════════════════════════════════════════════════
-document.getElementById('gradeGrid').addEventListener('click', e => {
-    const btn = e.target.closest('.grade-btn');
-    if (!btn) return;
-    document.querySelectorAll('#gradeGrid .grade-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    state.grade = btn.dataset.grade;
-    checkStep0();
-});
-document.getElementById('clarityCards').addEventListener('click', e => {
-    const card = e.target.closest('.clarity-card');
-    if (!card) return;
-    document.querySelectorAll('.clarity-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    state.clarity = parseInt(card.dataset.clarity);
-    checkStep0();
-});
-function checkStep0() {
-    document.getElementById('btnStep0').disabled = !(state.grade && state.clarity);
-}
-
-// ═══════════════════════════════════════════════════════
-//  VALUES HANDLERS
-// ═══════════════════════════════════════════════════════
-function selectValue(qId, el, maxSelect) {
-    const qContainer = document.getElementById(qId);
-    const valId = el.dataset.val;
-    const arr = state.values[qId] || [];
-
-    if (maxSelect === 1) {
-        // Single select
-        qContainer.querySelectorAll('.value-opt').forEach(o => o.classList.remove('selected-single'));
-        el.classList.add('selected-single');
-        state.values[qId] = [valId];
-    } else {
-        // Multi select up to maxSelect
-        if (el.classList.contains('selected')) {
-            el.classList.remove('selected');
-            state.values[qId] = arr.filter(v => v !== valId);
-        } else {
-            if (arr.length >= maxSelect) return; // don't exceed max
-            el.classList.add('selected');
-            state.values[qId] = [...arr, valId];
-        }
-    }
-    checkStep1();
-}
-function checkStep1() {
-    const ok = (state.values.vq1 && state.values.vq1.length === 2) &&
-               (state.values.vq2 && state.values.vq2.length === 1);
-    document.getElementById('btnStep1').disabled = !ok;
-}
-
-// ═══════════════════════════════════════════════════════
-//  ABILITIES — BUILD UI
-// ═══════════════════════════════════════════════════════
-function buildAbilityGrid() {
-    const grid = document.getElementById('abilityGrid');
-    grid.innerHTML = '';
-    ABILITIES.forEach(ab => {
-        const div = document.createElement('div');
-        div.className = 'ability-item';
-        div.innerHTML = `
-            <div class="ability-label">
-                <strong>${ab.label}</strong>
-                <small>${ab.desc}</small>
-            </div>
-            <div class="ability-choices">
-                <button class="choice-btn good" data-ab="${ab.id}" data-val="good" onclick="setAbility('${ab.id}','good',this)">擅長</button>
-                <button class="choice-btn avg"  data-ab="${ab.id}" data-val="avg"  onclick="setAbility('${ab.id}','avg',this)">普通</button>
-                <button class="choice-btn weak" data-ab="${ab.id}" data-val="weak" onclick="setAbility('${ab.id}','weak',this)">不擅長</button>
-            </div>`;
-        grid.appendChild(div);
-    });
-}
-function setAbility(abId, val, btn) {
-    const row = btn.closest('.ability-item');
-    row.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    state.abilities[abId] = val;
-    checkStep2();
-}
-function checkStep2() {
-    const done = Object.keys(state.abilities).length;
-    document.getElementById('btnStep2').disabled = (done < ABILITIES.length);
-    const doneEl = document.getElementById('abilityDone');
-    if (doneEl) doneEl.textContent = done;
-}
-
-// ═══════════════════════════════════════════════════════
-//  SCENARIOS — BUILD UI
-// ═══════════════════════════════════════════════════════
-function buildScenarios() {
-    const container = document.getElementById('scenarioQuestions');
-    container.innerHTML = '';
-    SCENARIOS.forEach((q, qi) => {
-        const card = document.createElement('div');
-        card.className = 'q-card';
-        card.id = `qcard${q.id}`;
-        card.innerHTML = `
-            <div class="q-card-header">
-                <div class="q-num">${qi+1}</div>
-                <div class="q-title">${q.title}</div>
-                <div class="q-status" id="qstatus${q.id}">待作答</div>
-            </div>
-            <div class="q-options" id="qopts${q.id}">
-                ${q.options.map((opt, oi) => `
-                    <div class="q-opt" id="qopt${q.id}_${oi}" onclick="clickScenarioOpt(${q.id},${oi})">
-                        <div class="rank-badge" id="badge${q.id}_${oi}">?</div>
-                        <span>${opt.text}</span>
-                    </div>`).join('')}
-            </div>`;
-        container.appendChild(card);
-    });
-}
-
-function clickScenarioOpt(qId, optIdx) {
-    const hasBest  = state.scenarioBest[qId]  !== undefined;
-    const hasWorst = state.scenarioWorst[qId] !== undefined;
-
-    // If already fully answered, allow reset
-    if (hasBest && hasWorst) {
-        // Reset this question
-        state.scenarioBest[qId]  = undefined;
-        state.scenarioWorst[qId] = undefined;
-        renderScenarioQ(qId);
-        updateDoneCount();
-        checkStep3();
-        return;
-    }
-
-    if (!hasBest) {
-        // First click = BEST
-        state.scenarioBest[qId] = optIdx;
-    } else if (optIdx === state.scenarioBest[qId]) {
-        // Clicked same as best → deselect best
-        state.scenarioBest[qId] = undefined;
-    } else {
-        // Second click = WORST
-        state.scenarioWorst[qId] = optIdx;
-    }
-    renderScenarioQ(qId);
-    updateDoneCount();
-    checkStep3();
-}
-
-function renderScenarioQ(qId) {
-    const best  = state.scenarioBest[qId];
-    const worst = state.scenarioWorst[qId];
-    const q = SCENARIOS.find(s => s.id === qId);
-
-    q.options.forEach((_, oi) => {
-        const opt = document.getElementById(`qopt${qId}_${oi}`);
-        const badge = document.getElementById(`badge${qId}_${oi}`);
-        opt.classList.remove('is-best','is-worst','is-mid');
-        badge.textContent = '?';
-
-        if (best !== undefined && worst !== undefined) {
-            // Fully answered
-            if (oi === best)  { opt.classList.add('is-best');  badge.textContent = '最合'; }
-            else if (oi === worst) { opt.classList.add('is-worst'); badge.textContent = '最不'; }
-            else { opt.classList.add('is-mid'); badge.textContent = '～'; }
-        } else if (best !== undefined) {
-            if (oi === best) { opt.classList.add('is-best'); badge.textContent = '最合'; }
-        }
-    });
-
-    const status = document.getElementById(`qstatus${qId}`);
-    if (best !== undefined && worst !== undefined) {
-        status.textContent = '✓ 完成'; status.className = 'q-status done';
-    } else if (best !== undefined) {
-        status.textContent = '再選最不合的'; status.className = 'q-status';
-    } else {
-        status.textContent = '待作答'; status.className = 'q-status';
-    }
-}
-
-function updateDoneCount() {
-    let done = 0;
-    SCENARIOS.forEach(q => {
-        if (state.scenarioBest[q.id] !== undefined && state.scenarioWorst[q.id] !== undefined) done++;
-    });
-    document.getElementById('doneCount').textContent = done;
-}
-
-function checkStep3() {
-    let done = 0;
-    SCENARIOS.forEach(q => {
-        if (state.scenarioBest[q.id] !== undefined && state.scenarioWorst[q.id] !== undefined) done++;
-    });
-    document.getElementById('btnStep3').disabled = (done < SCENARIOS.length);
-}
-
-// ═══════════════════════════════════════════════════════
-//  SCORING ENGINE
-// ═══════════════════════════════════════════════════════
-function calculateScores() {
-    const interestScores = {}; // from scenarios
-    const abilityScores  = {}; // from ability module
-    const valueScores    = {}; // from values module
-    GROUPS.forEach(g => { interestScores[g]=0; abilityScores[g]=0; valueScores[g]=0; });
-
-    // --- Scenario Scoring ---
-    SCENARIOS.forEach(q => {
-        const bestIdx  = state.scenarioBest[q.id];
-        const worstIdx = state.scenarioWorst[q.id];
-        q.options.forEach((opt, oi) => {
-            const g = opt.group;
-            if (oi === bestIdx)  interestScores[g] += 5;
-            else if (oi === worstIdx) interestScores[g] -= 5;
-            else interestScores[g] += 1;
-        });
-    });
-
-    // --- Ability Scoring ---
-    ABILITIES.forEach(ab => {
-        const rating = state.abilities[ab.id];
-        const pts = rating === 'good' ? 3 : rating === 'avg' ? 1 : 0;
-        ab.groups.good.forEach(g => { abilityScores[g] += pts; });
-        if (rating === 'weak') {
-            // 不擅長此能力 → 對需要此能力的學群施加懲罰分
-            ab.groups.good.forEach(g => { abilityScores[g] -= 2; });
-        }
-    });
-
-    // --- Values Scoring ---
-    // Q1：你在乎的（選2個）→ 各 +2
-    (state.values.vq1 || []).forEach(valId => {
-        const vm = VALUES_MAP[valId];
-        if (vm) vm.groups.forEach(g => { valueScores[g] += 2; });
-    });
-    // Q2：最崩潰情境（選1個）→ 反映你最不可妥協的需求 → +5（更強信號）
-    (state.values.vq2 || []).forEach(valId => {
-        const vm = VALUES_MAP[valId];
-        if (vm) vm.groups.forEach(g => { valueScores[g] += 5; });
-    });
-
-    // --- Normalize each to 0–100 ---
-    const normalize = (scoreObj) => {
-        const vals = Object.values(scoreObj);
-        const min = Math.min(...vals);
-        const max = Math.max(...vals);
-        const range = max - min || 1;
-        const out = {};
-        GROUPS.forEach(g => { out[g] = Math.round(((scoreObj[g] - min) / range) * 100); });
-        return out;
-    };
-
-    const normInterest = normalize(interestScores);
-    const normAbility  = normalize(abilityScores);
-    const normValues   = normalize(valueScores);
-
-    // --- Weighted combination ---
-    const final = {};
-    GROUPS.forEach(g => {
-        final[g] = Math.round(normInterest[g] * 0.5 + normAbility[g] * 0.3 + normValues[g] * 0.2);
-    });
-
-    return { final, normInterest, normAbility, normValues };
-}
-
-// ═══════════════════════════════════════════════════════
-//  RIASEC CALCULATION
-// ═══════════════════════════════════════════════════════
-function calcRiasec(scores) {
-    const riasecScores = {};
-    Object.entries(RIASEC).forEach(([type, groups]) => {
-        riasecScores[type] = Math.round(groups.reduce((sum, g) => sum + (scores[g] || 0), 0) / groups.length);
-    });
-    return riasecScores;
-}
-
-// ═══════════════════════════════════════════════════════
-//  RENDER RESULTS
-// ═══════════════════════════════════════════════════════
-function calculateAndShow() {
-    // Safety guard: ensure all steps are complete
-    const abilitiesDone = Object.keys(state.abilities).length >= ABILITIES.length;
-    const valuesDone = (state.values.vq1||[]).length===2 && (state.values.vq2||[]).length===1;
-    const scenariosDone = SCENARIOS.every(q => state.scenarioBest[q.id]!==undefined && state.scenarioWorst[q.id]!==undefined);
-    if (!abilitiesDone || !valuesDone || !scenariosDone) {
-        console.warn('計算被多余觸發，已阻擋：步驟尚未完成');
-        return;
-    }
-    document.getElementById('loading-overlay').classList.add('show');
-    setTimeout(() => {
-      try {
-        const { final, normInterest, normAbility } = calculateScores();
-        const sorted = Object.entries(final).sort((a,b) => b[1]-a[1]);
-        const top3 = sorted.slice(0,3);
-        const riasecScores = calcRiasec(final);
-
-        // Hide steps, show result
-        document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
-        document.getElementById('resultSection').style.display = 'block';
-        updateProgress(4);
-
-        // RIASEC top types
-        const sortedRiasec = Object.entries(riasecScores).sort((a,b)=>b[1]-a[1]);
-        const topRiasec = sortedRiasec.slice(0,2).map(([t])=>t);
-        document.getElementById('resTitle').textContent = `你的職涯羅盤 — ${topRiasec.map(t=>RIASEC_LABELS[t]).join(' × ')}`;
-        const gradeText = state.grade ? `就讀${state.grade}` : '在學學生';
-        document.getElementById('resSubtitle').textContent =
-            `三維度分析完成 · ${gradeText} · 最高適配指數 ${top3[0][1]}%`;
-
-        const riasecEl = document.getElementById('resRiasec');
-        riasecEl.innerHTML = topRiasec.map(t=>`<span class="riasec-pill">${t} ${RIASEC_LABELS[t]}</span>`).join('');
-
-        // Clarity Message
-        const clarityMsgs = {
-            1: `<div class="label">😵 給迷茫的你</div>迷茫是一種信號，不是缺點——它代表你還沒有找到讓你心跳加速的那件事。這份報告不是要給你一個「正確答案」，而是幫你看見幾個值得去探索的方向。先從「行動卡」開始，<strong>今天做一件小事</strong>，比想清楚重要。`,
-            2: `<div class="label">🤔 給有初步想法的你</div>你對未來有感覺，但感覺還模糊——這很正常。接下來，特別看「興趣 × 能力 交叉分析」，裡面會告訴你，你的熱情和你的能力有沒有對齊。如果有落差，先去確認那個落差是「暫時的不足」還是「真的不喜歡」，這比糾結哪個學群更重要。`,
-            3: `<div class="label">🙂 給有幾個選項的你</div>你的問題不是「沒有想法」，而是「選項太多，不知道優先順序」。重點看 TOP 3 學群的分數差距——若差距很小，代表你是一個跨域型人格。此時，<strong>能力分析</strong>的結果更值得參考，去選那個你「既感興趣又相對擅長」的交叉點。`,
-            4: `<div class="label">😎 給有明確目標的你</div>很好，你有方向。現在這份報告幫你驗證：你的選擇是否與你的能力和價值觀一致？若發現某個新的學群出現在你的 TOP 3，不必焦慮——那是一個值得去了解看看的「第二選擇」，把它存起來備用。`
-        };
-        document.getElementById('clarityMsg').innerHTML = clarityMsgs[state.clarity] || clarityMsgs[2];
-
-        // 過度集中警告
-        if (top3.length >= 2 && (top3[0][1] - top3[1][1]) > 30) {
-            document.getElementById('clarityMsg').innerHTML +=
-                `<div style="margin-top:.75rem;padding:.65rem .9rem;background:rgba(245,158,11,.1);border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;font-size:.82rem;color:#78350f;">
-                ⚠️ <strong>提醒：</strong>你的選擇高度集中在第一志願學群，可能反映的是既有印象而非全面探索。建議也認識第 2、3 名學群！</div>`;
-        }
-
-        // TOP 3 Groups
-        const topEl = document.getElementById('topGroupsOutput');
-        topEl.innerHTML = top3.map(([g,s],i) =>
-            `<div class="top-group-item">
-                <div class="rank-icon">${['🥇','🥈','🥉'][i]}</div>
-                <div class="group-info">
-                    <div class="group-name">${g}</div>
-                    <div class="group-score">綜合適配 ${s}%</div>
-                    <div class="score-bar-bg"><div class="score-bar-fill" style="width:${s}%"></div></div>
-                </div>
-            </div>`
-        ).join('');
-
-        // RIASEC Chart
-        const ctx = document.getElementById('riasecChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: Object.keys(riasecScores).map(t => `${t}\n${RIASEC_LABELS[t]}`),
-                datasets: [{
-                    label: '你的輪廓',
-                    data: Object.values(riasecScores),
-                    backgroundColor: 'rgba(99,102,241,.2)',
-                    borderColor: '#6366f1',
-                    pointBackgroundColor: '#6366f1',
-                    borderWidth: 2,
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 25, font:{size:9} }, pointLabels: { font:{size:10} } } },
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        // RIASEC 六型說明
-        const riasecDescEl = document.getElementById('riasecDesc');
-        if (riasecDescEl) {
-            const rd = {R:'現實型：動手實作、技術操作',I:'研究型：邏輯分析、科學探索',A:'藝術型：創作表達、審美創新',S:'社會型：助人服務、溝通協作',E:'企業型：領導組織、說服影響',C:'傳統型：系統規劃、精確執行'};
-            riasecDescEl.innerHTML = Object.entries(rd).map(([k,v])=>`<div><strong style="color:var(--primary)">${k}</strong> ${v}</div>`).join('');
-        }
-
-        // Gap Analysis
-        const gapTable = document.getElementById('gapTable');
-        gapTable.innerHTML = `<tr>
-            <th>學群</th><th>興趣</th><th>能力</th><th>建議</th>
-        </tr>`;
-        top3.slice(0,3).concat(sorted.slice(3,6)).forEach(([g]) => {
-            const iScore = normInterest[g] || 0;
-            const aScore = normAbility[g]  || 0;
-            const iStars = '★'.repeat(Math.round(iScore/25)).padEnd(4,'☆');
-            const aStars = '★'.repeat(Math.round(aScore/25)).padEnd(4,'☆');
-            const gap = iScore - aScore;
-            let tag='', tagClass='';
-            if (Math.abs(gap) <= 20)       { tag='✅ 興趣能力對齊'; tagClass='gap-match'; }
-            else if (gap > 20 && gap<=40)  { tag='⚡ 強烈嚮往，能力可提升'; tagClass='gap-ok'; }
-            else if (gap > 40)             { tag='⚠️ 熱情高，先確認能力門檻'; tagClass='gap-warn'; }
-            else                           { tag='💡 能力強，值得再探索'; tagClass='gap-strong'; }
-            gapTable.innerHTML += `<tr>
-                <td style="font-weight:600">${g}</td>
-                <td><span class="stars">${iStars}</span></td>
-                <td><span class="stars">${aStars}</span></td>
-                <td><span class="gap-tag ${tagClass}">${tag}</span></td>
-            </tr>`;
-        });
-
-        // Career Output
-        const careerEl = document.getElementById('careerOutput');
-        careerEl.innerHTML = top3.map(([g],i) => `
-            <div style="margin-bottom:.85rem;">
-                <div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.35rem;">${['🥇','🥈','🥉'][i]} ${g}</div>
-                <div class="career-tags">${(CAREER_MAP[g]||'').split('、').map(c=>`<span class="career-tag">${c}</span>`).join('')}</div>
-            </div>`).join('');
-
-        // Action Cards（TOP 1；若 TOP1 / TOP2 分差 ≤ 8 則雙軌輸出）
-        const topGroup = top3[0][0];
-        const secondGroup = top3[1] ? top3[1][0] : null;
-        const isCloseScore = secondGroup && (top3[0][1] - top3[1][1]) <= 8;
-        const acts = ACTION_MAP[topGroup] || { today:'今天搜尋【'+topGroup+'】的相關YouTube影片', month:'深入了解這個學群的大學科系和入學門檻', year:'以與此學群相關的科目為目標開始備考' };
-        const actionCardH3 = document.getElementById('actionOutput').previousElementSibling;
-        if (actionCardH3 && actionCardH3.tagName === 'H3') {
-            actionCardH3.textContent = isCloseScore ? `📌 ${topGroup} × ${secondGroup} 雙軌行動計畫` : '📌 下一步行動計畫';
-        }
-        let actionHTML = `
-            <div class="action-card today">
-                <div class="action-icon">📱</div>
-                <div><div class="action-title">今天可以做的事${isCloseScore?' ('+topGroup+')':''}</div><div class="action-content">${acts.today}</div></div>
-            </div>
-            <div class="action-card month">
-                <div class="action-icon">📅</div>
-                <div><div class="action-title">這個月可以做的事</div><div class="action-content">${acts.month}</div></div>
-            </div>
-            <div class="action-card year">
-                <div class="action-icon">🎯</div>
-                <div><div class="action-title">一年後要確認的事</div><div class="action-content">${acts.year}</div></div>
-            </div>`;
-        if (isCloseScore && secondGroup) {
-            const acts2 = ACTION_MAP[secondGroup];
-            if (acts2) {
-                actionHTML += `
-                    <div style="margin-top:.5rem;padding:.4rem .75rem;background:#f8fafc;border-radius:8px;font-size:.73rem;font-weight:700;color:var(--text-light);letter-spacing:.04em;">🥈 ${secondGroup} 也很適合你，同步探索：</div>
-                    <div class="action-card today" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-left-color:var(--success);">
-                        <div class="action-icon">📱</div>
-                        <div><div class="action-title">今天也可以做</div><div class="action-content">${acts2.today}</div></div>
-                    </div>`;
-            }
-        }
-        document.getElementById('actionOutput').innerHTML = actionHTML;
-
-        // Save to global state for Email submitting
-        window.finalAnalysisData = {
-            grade: state.grade,
-            clarity: state.clarity,
-            topGroup: topGroup,
-            actions: { ...acts, today2: (isCloseScore && secondGroup && ACTION_MAP[secondGroup]) ? ACTION_MAP[secondGroup].today : null },
-            finalScores: final,
-            rawResponses: { values: state.values, abilities: state.abilities, best: state.scenarioBest, worst: state.scenarioWorst }
+    <script>
+        /* ─── DATA SOURCES (Merged from V2) ─── */
+        const GROUPS = ['資訊學群', '工程學群', '數理化學學群', '醫藥衛教學群', '生命科學學群', '生物資源學群', '地球與環境學群', '大眾傳播學群', '藝術學群', '建築與設計學群', '文史哲學群', '外語學群', '財經學群', '管理學群', '法政學群', '社會與心理學群', '教育學群', '遊憩與運動學群'];
+        const MONSTERS = {
+            '資訊學群': 'pic/monsters/1臭蟲寄生獸.webp',
+            '工程學群': 'pic/monsters/2修羅哥布林.webp',
+            '數理化學學群': 'pic/monsters/3真理巫妖.webp',
+            '醫藥衛教學群': 'pic/monsters/4聖光天使.webp',
+            '生命科學學群': 'pic/monsters/5基因煉金術師.webp',
+            '生物資源學群': 'pic/monsters/6森之德魯伊.webp',
+            '地球與環境學群': 'pic/monsters/7觀星樹人.webp',
+            '建築與設計學群': 'pic/monsters/8偏執造物主.webp',
+            '藝術學群': 'pic/monsters/9幻象獨角獸.webp',
+            '大眾傳播學群': 'pic/monsters/10風向變形怪.webp',
+            '外語學群': 'pic/monsters/11破壁雙首龍.webp',
+            '文史哲學群': 'pic/monsters/12跨時空藏書靈.webp',
+            '教育學群': 'pic/monsters/13播種妖精.webp',
+            '法政學群': 'pic/monsters/14秩序地獄犬.webp',
+            '社會與心理學群': 'pic/monsters/15讀心深淵水母.webp',
+            '管理學群': 'pic/monsters/16暴君獅鷲.webp',
+            '財經學群': 'pic/monsters/17金幣巨龍.webp',
+            '遊憩與運動學群': 'pic/monsters/18滿血狂戰士.webp'
         };
 
-        // Subject Weights（視覺化橫條）
-        const subEl = document.getElementById('subjectOutput');
-        subEl.innerHTML = top3.map(([g],i) => {
-            const w = SUBJECT_MAP[g] || {};
-            return `<div style="background:#f8fafc;border-radius:10px;padding:1rem 1.25rem;">
-                <div style="font-weight:700;margin-bottom:.75rem;color:var(--primary)">${['🥇','🥈','🥉'][i]} ${g}</div>
-                <div style="display:grid;gap:.45rem;">
-                    ${Object.entries(w).sort((a,b)=>b[1]-a[1]).map(([sub,pct])=>`
-                        <div style="display:flex;align-items:center;gap:.6rem;">
-                            <div style="width:28px;font-size:.72rem;font-weight:600;color:var(--text-light);text-align:right;flex-shrink:0;">${sub}</div>
-                            <div style="flex:1;background:#e2e8f0;border-radius:50px;height:8px;overflow:hidden;">
-                                <div style="width:${pct}%;height:100%;border-radius:50px;background:${pct>70?'var(--danger)':pct>40?'var(--primary)':'#94a3b8'};transition:width .8s ease;"></div>
-                            </div>
-                            <div style="width:34px;font-size:.75rem;font-weight:700;color:${pct>70?'var(--danger)':pct>40?'var(--primary)':'#64748b'}">${pct}%</div>
-                        </div>`).join('')}
-                </div>
-            </div>`;
-        }).join('');
+        const VALUES_MAP = {
+            achieve: { groups: ['工程學群', '醫藥衛教學群', '管理學群', '財經學群'] },
+            help: { groups: ['教育學群', '社會與心理學群', '醫藥衛教學群', '生物資源學群'] },
+            create: { groups: ['藝術學群', '建築與設計學群', '大眾傳播學群', '文史哲學群'] },
+            explore: { groups: ['數理化學學群', '生命科學學群', '地球與環境學群', '資訊學群'] },
+            stable: { groups: ['財經學群', '法政學群', '教育學群', '管理學群'] },
+            impact: { groups: ['法政學群', '社會與心理學群', '管理學群', '大眾傳播學群'] }
+        };
 
-      } catch(err) {
-          console.error('職涯羅盤計算錯誤：', err);
-      } finally {
-          const ov = document.getElementById('loading-overlay');
-          ov.classList.remove('show');
-          ov.style.display = 'none'; // double-guarantee
-      }
-      document.getElementById('resultSection').scrollIntoView({behavior:'smooth'});
-    }, 1200);
-}
+        // 24 Abilities
+        const RAW_ABILITIES = [
+            { id: 'logic', l: '邏輯分析', d: '解題時能找到規律', g: ['數理化學學群', '資訊學群', '工程學群', '法政學群'] },
+            { id: 'writing', l: '文字表達', d: '寫的東西清楚有條理', g: ['文史哲學群', '大眾傳播學群', '外語學群', '教育學群'] },
+            { id: 'spatial', l: '空間視覺', d: '能看出設計圖或空間配置的問題', g: ['建築與設計學群', '藝術學群', '工程學群'] },
+            { id: 'math', l: '數字直覺', d: '面對數字統計，能快速找規律', g: ['數理化學學群', '財經學群', '資訊學群', '工程學群'] },
+            { id: 'empathy', l: '同理傾聽', d: '朋友常找你談心，能幫他梳理情緒', g: ['社會與心理學群', '教育學群', '醫藥衛教學群'] },
+            { id: 'hands', l: '動手實作', d: '喜歡動手修理組裝，通常能成功', g: ['工程學群', '生物資源學群', '遊憩與運動學群'] },
+            { id: 'memory', l: '記憶背誦', d: '大量資料（單字、年表）難不倒你', g: ['醫藥衛教學群', '外語學群', '法政學群', '文史哲學群'] },
+            { id: 'aesthetic', l: '美感審美', d: '看到設計排版，能馬上感覺美不美', g: ['藝術學群', '建築與設計學群', '大眾傳播學群'] },
+            { id: 'nature', l: '生態觀察', d: '對動植物生態環境很敏感', g: ['生命科學學群', '生物資源學群', '地球與環境學群'] },
+            { id: 'organize', l: '組織規劃', d: '活動任務習慣先想好流程備案', g: ['管理學群', '法政學群', '教育學群', '財經學群'] },
+            { id: 'critical', l: '批判思考', d: '看到論點，習慣質疑「有什麼漏洞？」', g: ['法政學群', '數理化學學群', '社會與心理學群'] },
+            { id: 'language', l: '語言直覺', d: '學語言時語感抓得較快', g: ['外語學群', '大眾傳播學群', '文史哲學群'] },
+            { id: 'leadership', l: '領導統御', d: '小組討論時通常是分配工作的人', g: ['管理學群', '法政學群', '教育學群', '大眾傳播學群'] },
+            { id: 'commercial', l: '商業洞察', d: '看到生意會直覺算怎麼賺錢', g: ['財經學群', '管理學群', '資訊學群'] },
+            { id: 'data_sense', l: '數據解析', d: '看圖表資料能一眼抓到趨勢', g: ['數理化學學群', '財經學群', '資訊學群', '地球與環境學群'] },
+            { id: 'machinery', l: '機械靈感', d: '複雜機器介面隨便摸就知道怎麼操作', g: ['工程學群', '遊憩與運動學群', '生物資源學群'] },
+            { id: 'coding', l: '演算法思維', d: '做事喜歡先定好規則和步驟', g: ['資訊學群', '數理化學學群', '工程學群'] },
+            { id: 'visual', l: '影像直覺', d: '對畫面色彩搭配有一套標準堅持', g: ['藝術學群', '建築與設計學群', '大眾傳播學群'] },
+            { id: 'history', l: '脈絡推敲', d: '對事件的前因後果記憶力特好', g: ['文史哲學群', '法政學群', '社會與心理學群'] },
+            { id: 'teaching', l: '教學轉譯', d: '教人功課時能換方式讓他聽懂', g: ['教育學群', '社會與心理學群', '醫藥衛教學群'] },
+            { id: 'plants', l: '戶外耐受', d: '比冷氣房更喜歡戶外自然環境', g: ['生物資源學群', '地球與環境學群', '遊憩與運動學群'] },
+            { id: 'medical', l: '生命科學', d: '讀到人體構造疾病原理覺得有趣', g: ['醫藥衛教學群', '生命科學學群', '生物資源學群'] },
+            { id: 'negotiate', l: '說服交涉', d: '遇不合理規定能找到論點去說服', g: ['法政學群', '管理學群', '大眾傳播學群'] },
+            { id: 'patience', l: '細節耐心', d: '反覆確認對齊格式不容易出錯', g: ['外語學群', '財經學群', '工程學群'] }
+        ];
 
-// ═══════════════════════════════════════════════════════
-//  UNLOCK & DATA SUBMIT
-// ═══════════════════════════════════════════════════════
-function submitEmailUnlock() {
-    const emailInput = document.getElementById('userEmailInput');
-    const email = emailInput.value.trim();
-    if(!email || !email.includes('@')) {
-        alert('請輸入有效的 Email 信箱喔！');
-        return;
-    }
-    
-    const btn = document.getElementById('unlockBtn');
-    btn.disabled = true;
-    btn.textContent = '處理中...';
+        // 20 Scenarios
+        const RAW_SCENARIOS = [
+            { t: '學校功課是社群媒體經營，你會用什麼方式繳交這門作業?', o: [{ t: '拍攝並剪輯有特效的創意短影音', g: '大眾傳播學群' }, { t: '撰寫動漫或電影的影評與深度分析', g: '文史哲學群' }, { t: '設計版面視覺與濾鏡，讓畫面更美觀', g: '藝術學群' }, { t: '開發自動回覆粉絲訊息的機器人程式', g: '資訊學群' }] },
+            { t: '學校舉辦大型電競比賽，你會負責哪一塊?', o: [{ t: '規劃比賽場地的舞台動線與空間設計', g: '建築與設計學群' }, { t: '擔任賽事主播或導播，掌控現場氣氛', g: '大眾傳播學群' }, { t: '架架設比賽用的伺服器與網路系統', g: '工程學群' }, { t: '計算門票收入與贊助商的財務報表', g: '財經學群' }] },
+            { t: '解決環境問題方向，你傾向於?', o: [{ t: '研究能分解塑膠的新型細菌或酵素', g: '生命科學學群' }, { t: '設計垃圾分類宣導課程', g: '教育學群' }, { t: '開發能自動夾取海洋垃圾的機械手臂', g: '工程學群' }, { t: '推動社區心理輔導，緩解大家焦慮', g: '社會與心理學群' }] },
+            { t: '社團活動:一日職人體驗', o: [{ t: '跟著醫生巡房，學習關懷病人', g: '醫藥衛教學群' }, { t: '跟著健身教練，學習人體肌群位置', g: '遊憩與運動學群' }, { t: '跟著律師研究法條，了解案件哪邊不公平', g: '法政學群' }, { t: '跟會計師查核公司帳務和稅務', g: '財經學群' }] },
+            { t: '社團成果發表會，你會負責哪一塊?', o: [{ t: '繪製活動海報與設計周邊商品', g: '藝術學群' }, { t: '擔任總召，協調同學，掌握整個班級的預算', g: '管理學群' }, { t: '帶領大家去戶外採集植物並解說', g: '生物資源學群' }, { t: '開IG，撰寫今天社團成果文並分享出去', g: '文史哲學群' }] },
+            { t: '自我進修選擇:', o: [{ t: '學攝影構圖與色彩學', g: '藝術學群' }, { t: '研究股票K線圖與投資理財知識', g: '財經學群' }, { t: '學習程式與了解最新的科技新知', g: '資訊學群' }, { t: '學習第二外語（日韓德法西）', g: '外語學群' }] },
+            { t: '暑期打工實習:', o: [{ t: '去醫院協助衛教宣導與照顧長輩', g: '醫藥衛教學群' }, { t: '去旅行社實習，跟著導遊規劃生態旅遊路線', g: '遊憩與運動學群' }, { t: '去人資部門，體驗一日主管，學習面試與員工訓練', g: '管理學群' }, { t: '去農場學習有機栽培與病蟲害防治', g: '生物資源學群' }] },
+            { t: '世界末日來臨時:', o: [{ t: '利用物理化學提煉乾淨水', g: '數理化學學群' }, { t: '安撫恐慌群眾幫助調解', g: '社會與心理學群' }, { t: '修好發電機與通訊設備', g: '工程學群' }, { t: '傳遞生存情報與廣播哪裡有物資', g: '大眾傳播學群' }] },
+            { t: '最喜歡的閱讀題材:', o: [{ t: '各國歷史野史與古典文學', g: '文史哲學群' }, { t: '最新的科技雜誌與3C評測', g: '資訊學群' }, { t: '建築大師的作品集與室內設計雜誌', g: '建築與設計學群' }, { t: '探索宇宙奧秘與地質結構的書籍', g: '地球與環境學群' }] },
+            { t: '在未來，你幻想的理想工作環境?', o: [{ t: '在實驗室裡專注研究，探索未知', g: '生命科學學群' }, { t: '在法庭或議會上，為正義辯護', g: '法政學群' }, { t: '在戶外大自然中，保育森林與照顧動物', g: '生物資源學群' }, { t: '在跨國企業裡，使用外語溝通生意', g: '外語學群' }] },
+            { t: '你最容易一直追、停不下來的影片是？', o: [{ t: '大自然、野生動物、海洋宇宙探索的紀錄片（BBC、Discovery那類）', g: '地球與環境學群' }, { t: '運動賽事精華、球星傳記、奧運熱血故事', g: '遊憩與運動學群' }, { t: '創業家成功祕辛、商場投資、科技巨頭崛起故事', g: '財經學群' }, { t: '建築改造、室內設計、手作職人的幕後紀錄', g: '建築與設計學群' }] },
+            { t: '如果可能，最想做的高中科展主題', o: [{ t: '不同洗手乳的殺菌效果', g: '醫藥衛教學群' }, { t: '利用程式模擬紅綠燈的最佳秒數', g: '資訊學群' }, { t: '自製天然染料並應用於布料', g: '藝術學群' }, { t: '研究校園土壤的酸鹼值與成分', g: '地球與環境學群' }] },
+            { t: '和同學組隊打Game，你的角色是?', o: [{ t: '專注研究裝備數值的硬核玩家', g: '數理化學學群' }, { t: '幫角色捏臉買外觀的顏值控', g: '藝術學群' }, { t: '負責嘴砲與挑釁敵陣的鍵盤俠', g: '大眾傳播學群' }, { t: '負責指揮大局調動戰術的隊長', g: '管理學群' }] },
+            { t: '對什麼時事新聞最敏感?', o: [{ t: '某國通過重大人權法案', g: '法政學群' }, { t: '發現新的古文明遺跡或生物化石', g: '文史哲學群' }, { t: '通膨數據引發股市崩盤', g: '財經學群' }, { t: '諾貝爾化學獎得主的新發現', g: '數理化學學群' }] },
+            { t: '學校額外開立的免費課程，邀請大牌Youtuber，你會想聽哪一類型的？', o: [{ t: 'PEETA葛格-增肌減脂', g: '遊憩與運動學群' }, { t: '啾啾鞋-生活科學科普', g: '數理化學學群' }, { t: '酷的夢-法國旅遊必學單字', g: '外語學群' }, { t: '昆蟲擾西-2026世界最大昆蟲展', g: '生命科學學群' }] },
+            { t: '假如跟同學合夥創業', o: [{ t: '賣自己的手工藝設計品', g: '藝術學群' }, { t: '開一間深夜-解憂咖啡廳', g: '社會與心理學群' }, { t: '做生技保健，研發抗老藥', g: '生命科學學群' }, { t: '做踢爆真相的自媒體', g: '大眾傳播學群' }] },
+            { t: '你眼中的「數據」', o: [{ t: '是訓練AI人工智慧的燃料', g: '資訊學群' }, { t: '是制定商業決策的重要依據', g: '財經學群' }, { t: '是用來驗證科學理論的證據', g: '數理化學學群' }, { t: '是分析社會現象與民意的工具', g: '社會與心理學群' }] },
+            { t: '意外獲得三天連假:', o: [{ t: '去參觀美術館或設計展', g: '藝術學群' }, { t: '去參加馬拉松或登山健行', g: '遊憩與運動學群' }, { t: '去圖書館看一整天的書', g: '文史哲學群' }, { t: '在家研究壞掉的電器、組裝東西', g: '工程學群' }] },
+            { t: '對學校制度的改善想法:', o: [{ t: '修改不合理的校規，讓規定更公平', g: '法政學群' }, { t: '改善校徽校服等視覺災害', g: '建築與設計學群' }, { t: '請老師上課多點互動，比較不無聊', g: '教育學群' }, { t: '請徹底改進午餐的菜單與營養配比', g: '醫藥衛教學群' }] },
+            { t: '放學後，你最常自發去做…', o: [{ t: '用電腦寫程式、做設計，偶爾打打遊戲', g: '資訊學群' }, { t: '看紀錄片或書，學某個讓我著迷的知識', g: '數理化學學群' }, { t: '練習畫畫、樂器、運動、料理等特定技能', g: '藝術學群' }, { t: '跟朋友聊天、傾聽別人的煩惱', g: '社會與心理學群' }] }
+        ];
 
-    // 取得剛才暫存的分析資料
-    const payload = window.finalAnalysisData || {};
-    payload.email = email;
 
-    // 將資料發送給 Google Apps Script (請替換為您的 GAS URL)
-    const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwC9UTPJRnWCn0ouPPJr958wL2vV9RIUdxL51lyedU40gaSUZkXxA6EWZZPik8kt_BG/exec"; 
-    
-    // 使用 no-cors，因為跨域且我們不需要讀取 response 內容
-    fetch(GOOGLE_APP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    }).then(() => {
-        // 解鎖介面
-        document.getElementById('premiumWrap').classList.add('unlocked');
-        btn.textContent = '解鎖成功！';
-    }).catch(err => {
-        console.error("解鎖回傳有誤，但仍為使用者解鎖閱讀", err);
-        document.getElementById('premiumWrap').classList.add('unlocked');
-    });
-}
+        /* ─── UNIFIED QUESTION PROGRESSION GENERATOR ─── */
+        let QUESTIONS = [];
 
-// ═══════════════════════════════════════════════════════
-//  MONSTER CARD GENERATION
-// ═══════════════════════════════════════════════════════
-const MONSTER_MAP = {
-    '資訊學群': { rarity:'SSR', title:'代碼寄生獸', img:'monsters/code_parasite_burton_1776662852615.png', quote:'你不是討厭跟人講話，你只是覺得直接跟機器溝通比較不會中風。', match:'數理化學、管理學群 (能幫你看大局)', mismatch:'文史哲學群 (太抽象)' },
-    '財經學群': { rarity:'SR', title:'金幣巨龍', img:'monsters/coin_dragon_burton_1776662891730.png', quote:'你對投資報酬清醒無比，連在人際關係裡都會不自覺計算「沉沒成本」。', match:'管理學群、資訊學群 (講求效率)', mismatch:'社會與心理學群 (太溫情)' },
-    '醫藥衛教學群': { rarity:'SSR', title:'聖光天使', img:'monsters/healing_angel_burton_1776662933572.png', quote:'你總是照顧全世界的痛，卻經常忘了自己的肝跟胃也是血肉做的。', match:'生命科學、社會心理 (守護者同盟)', mismatch:'工程學群 (過於冷酷)' },
-    '大眾傳播學群': { rarity:'SR', title:'風向變形怪', img:'', quote:'你靠捕捉氣氛與趨勢為食，在人群中看似如魚得水，其實極需獨處回血。', match:'藝術學群、管理學群 (需要創意與行銷)', mismatch:'數理化學學群 (缺乏變通)' },
-    '管理學群': { rarity:'SSR', title:'暴君獅鷲', img:'', quote:'理智上知道要分工合作，但遇到豬隊友時內心只會咆哮「不如老子自己來」。', match:'財經學群、工程學群 (強強聯手)', mismatch:'藝術學群 (難以控制)' },
-    '藝術學群': { rarity:'SSR', title:'幻象獨角獸', img:'', quote:'你用極限的美感鄙視這個粗糙的世界，卻又總在深夜懷疑自己是不是天生奇才。', match:'建築設計、大眾傳播 (靈感激盪)', mismatch:'法政學群 (條條框框)' },
-    // 預設 (防呆)
-    'DEFAULT': { rarity:'R', title:'未開化原神', img:'', quote:'你的靈魂還在選擇要成為什麼樣的怪物，正在持續演化中...', match:'開放探索', mismatch:'畫地自限' }
-};
-
-function generateMonsterCard() {
-    if(!window.finalAnalysisData) {
-        alert("請先完成一次測驗生成報告！");
-        return;
-    }
-    
-    // 顯示 Loading
-    const ov = document.getElementById('loading-overlay');
-    ov.querySelector('p').textContent = '正在繪製您的寶可夢怪物卡...';
-    ov.classList.add('show');
-    ov.style.display = 'flex';
-
-    // 取得資料
-    const topGroup = window.finalAnalysisData.topGroup;
-    const sortedScores = Object.entries(window.finalAnalysisData.finalScores).sort((a,b)=>b[1]-a[1]);
-    const mData = MONSTER_MAP[topGroup] || MONSTER_MAP['DEFAULT'];
-    
-    // 寫入卡牌 UI
-    document.getElementById('cardRarity').textContent = mData.rarity;
-    document.getElementById('cardTitle').textContent = mData.title;
-    document.getElementById('cardQuote').textContent = mData.quote;
-    document.getElementById('cardScore').textContent = sortedScores[0][1];
-    document.getElementById('cardBestMatch').textContent = mData.match || '互補同伴';
-    document.getElementById('cardWorstMatch').textContent = mData.mismatch || '理念互斥';
-    
-    const cardImg = document.getElementById('cardImage');
-    if(mData.img) {
-        cardImg.src = mData.img;
-        cardImg.style.display = 'block';
-    } else {
-        cardImg.style.display = 'none'; // fallback text shows
-    }
-
-    // 等待圖片與文字變化載入後截圖以避免空白
-    setTimeout(() => {
-        const cardNode = document.getElementById('monsterCard');
-        // scale:2 讓匯出的圖片更清晰 (Retina 畫質)
-        html2canvas(cardNode, { scale: 2, backgroundColor: null, useCORS: true }).then(canvas => {
-            const container = document.getElementById('generatedCardContainer');
-            container.innerHTML = '';
-            
-            // 將 canvas 轉為圖片可以長按儲存
-            const imgEl = document.createElement('img');
-            imgEl.src = canvas.toDataURL("image/png");
-            imgEl.style.width = '100%';
-            imgEl.style.height = 'auto';
-            imgEl.style.display = 'block';
-            
-            container.appendChild(imgEl);
-            
-            // 隱藏 Loading, 顯示 Modal
-            ov.classList.remove('show');
-            ov.style.display = 'none';
-            document.getElementById('cardGeneratorModal').style.display = 'flex';
-        }).catch(err => {
-            console.error('截圖錯誤：', err);
-            alert('卡片生成失敗，請更換瀏覽器試試看！');
-            ov.classList.remove('show');
-            ov.style.display = 'none';
+        // 1. Profile
+        QUESTIONS.push({
+            type: 'single', key: 'grade', title: '誰在皮囊之下？', desc: '你的目前就讀狀態', opts: [
+                { t: '國中部', v: '初中' }, { t: '高中職', v: '高中' }, { t: '大學以上', v: '大學' }, { t: '社會人士', v: '社會' }
+            ]
         });
-    }, 500); // 緩衝時間讓渲染完成
-}
+        QUESTIONS.push({
+            type: 'single', key: 'clarity', title: '對於未來？', desc: '你目前的感受是:', opts: [
+                { t: '完全沒概念' }, { t: '有一點想法' }, { t: '有幾個方向' }, { t: '目標超明確' }
+            ]
+        });
 
-// ═══════════════════════════════════════════════════════
-//  RESTART
-// ═══════════════════════════════════════════════════════
-function restart() {
-    state.grade = null; state.clarity = null;
-    state.values = {vq1:[], vq2:[]};
-    state.abilities = {};
-    state.scenarioBest = {}; state.scenarioWorst = {};
-    document.querySelectorAll('.grade-btn,.clarity-card').forEach(el=>el.classList.remove('selected'));
-    document.getElementById('btnStep0').disabled = true;
+        // 2. Values
+        QUESTIONS.push({
+            type: 'multi', key: 'val1', max: 2, title: '20 年後，哪句話最能形容你的工作？', desc: '💡 這是複選題，選出最重要的「2個」', opts: [
+                { t: '🏆 做的事讓很多人過得更好 (成就)', v: 'achieve' },
+                { t: '🤝 沒有你，很多人不知道怎麼辦 (助人)', v: 'help' },
+                { t: '🎨 你的作品與風格讓人驚豔 (創造)', v: 'create' },
+                { t: '🔬 你解開了沒人解過的問題 (探索)', v: 'explore' },
+                { t: '🌱 生活穩定舒適，讓家人完全放心 (安全)', v: 'stable' },
+                { t: '🌏 因為你的工作，社會變得更公平更好 (影響力)', v: 'impact' }
+            ]
+        });
+        QUESTIONS.push({
+            type: 'single', key: 'val2', title: '工作中，哪種狀況最讓你感到崩潰？', desc: '選出 1 個絕對不能忍受的地雷', opts: [
+                { t: '😤 做一樣的事好幾年，完全沒新挑戰', v: 'explore' },
+                { t: '😞 努力工作，卻感覺不到自己在幫人', v: 'help' },
+                { t: '😓 工作沒創意空間，全照死板規定來', v: 'create' },
+                { t: '😔 努力非常久，卻一直看不到具體成果', v: 'achieve' },
+                { t: '😰 收入極度不穩，不知下月餐費在哪', v: 'stable' },
+                { t: '😟 工作對社會無意義，甚至可能有害', v: 'impact' }
+            ]
+        });
 
-    // Reset Premium Lock
-    document.getElementById('premiumWrap').classList.remove('unlocked');
-    document.getElementById('userEmailInput').value = '';
-    document.getElementById('unlockBtn').disabled = false;
-    document.getElementById('unlockBtn').innerHTML = '📨 寄送備份並解鎖報告 →';
+        // 3. Abilities (24 items)
+        RAW_ABILITIES.forEach(ab => {
+            QUESTIONS.push({
+                type: 'ability', ab: ab, title: ab.l, desc: '「' + ab.d + '」\n面對這件事你的天賦如何？',
+                opts: [{ t: '擅長', v: 'good' }, { t: '普通', v: 'avg' }, { t: '不擅長', v: 'weak' }]
+            });
+        });
 
-    // Reset overlay (in case previous run left it showing)
-    const ov = document.getElementById('loading-overlay');
-    ov.classList.remove('show'); ov.style.display = 'none';
-    document.getElementById('resultSection').style.display = 'none';
-    document.querySelectorAll('.step-section').forEach(s=>s.classList.remove('active'));
-    document.getElementById('step0').classList.add('active');
-    updateProgress(0);
-    buildAbilityGrid();
-    buildScenarios();
-    const rdoneEl = document.getElementById('abilityDone');
-    if (rdoneEl) rdoneEl.textContent = '0';
-    window.scrollTo({top:0,behavior:'smooth'});
-}
+        // 4. Scenarios (20 items)
+        RAW_SCENARIOS.forEach((sc, idx) => {
+            QUESTIONS.push({
+                type: 'scenario', sc: sc, qNum: idx + 1, title: sc.t, desc: '👉 請在下方選出 1 個【最想做】，再選 1 個【最不想做】。此題需要兩次點擊。',
+                opts: sc.o.map((o, i) => ({ t: o.t, group: o.g, oIdx: i }))
+            });
+        });
 
-// ═══════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════
-buildAbilityGrid();
-buildScenarios();
-updateProgress(0);
-const _ov = document.getElementById('loading-overlay');
-_ov.classList.remove('show'); _ov.style.display = 'none'; // ensure hidden on init
-</script>
+        // TOTAL Qs = 2 + 2 + 24 + 20 = 48
+        const TOTAL_QUESTIONS = QUESTIONS.length;
+
+        /* ─── STATE ENGINE ─── */
+        const S = {
+            qIdx: 0,
+            answers: {}, // generic store
+            abilities: {}, // specific store
+            scenariosBest: {}, // specific store
+            scenariosWorst: {}, // specific store
+
+            // Internal sub-state for current multi/scenario
+            curMultiSelection: [],
+            curScenarioBest: null
+        };
+
+
+        /* ─── AUDIO FX (Web Audio API synthesis) ─── */
+        let ac = null;
+        function initAudio() { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); }
+        function sfxHit() {
+            try {
+                if (!ac) return;
+                const o = ac.createOscillator(), g = ac.createGain();
+                o.type = 'triangle'; g.connect(ac.destination); o.connect(g);
+                o.frequency.setValueAtTime(400, ac.currentTime);
+                o.frequency.exponentialRampToValueAtTime(100, ac.currentTime + 0.1);
+                g.gain.setValueAtTime(0.3, ac.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.1);
+                o.start(); o.stop(ac.currentTime + 0.1);
+            } catch (e) { }
+        }
+        function sfxCrack() {
+            try {
+                if (!ac) return;
+                const o = ac.createOscillator(), g = ac.createGain();
+                o.type = 'square'; g.connect(ac.destination); o.connect(g);
+                o.frequency.setValueAtTime(100, ac.currentTime);
+                o.frequency.linearRampToValueAtTime(50, ac.currentTime + 0.2);
+                g.gain.setValueAtTime(0.4, ac.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.2);
+
+                // noise
+                const n = ac.sampleRate * 0.1, b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0);
+                for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+                const s = ac.createBufferSource(); s.buffer = b;
+                const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1000;
+                s.connect(f); f.connect(g); s.start();
+                o.start(); o.stop(ac.currentTime + 0.2);
+            } catch (e) { }
+        }
+        function sfxReveal() {
+            try {
+                if (!ac) return;
+                const o = ac.createOscillator(), g = ac.createGain();
+                o.type = 'sine'; o.connect(g); g.connect(ac.destination);
+                o.frequency.setValueAtTime(300, ac.currentTime);
+                o.frequency.exponentialRampToValueAtTime(1500, ac.currentTime + 1.2);
+                g.gain.setValueAtTime(0.5, ac.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 1.5);
+                o.start(); o.stop(ac.currentTime + 1.5);
+            } catch (e) { }
+        }
+
+
+        /* ─── VISUAL FX ─── */
+        function spawnParticles(amount) {
+            const egg = document.getElementById('eggContainer');
+            const rect = egg.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            for (let i = 0; i < amount; i++) {
+                const p = document.createElement('div');
+                p.className = 'debris';
+                p.style.left = cx + 'px';
+                p.style.top = cy + 'px';
+                document.body.appendChild(p);
+
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 40 + Math.random() * 80;
+                const tx = Math.cos(angle) * speed;
+                const ty = Math.sin(angle) * speed - 50; // gravity bias
+                const rot = (Math.random() - 0.5) * 720;
+
+                requestAnimationFrame(() => {
+                    p.style.transition = 'all 0.6s cubic-bezier(0.2, 1, 0.3, 1)';
+                    p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0)`;
+                    p.style.opacity = '0';
+                });
+                setTimeout(() => p.remove(), 600);
+            }
+        }
+        function shakeEgg() {
+            const area = document.getElementById('eggContainer');
+            area.classList.remove('shake');
+            void area.offsetWidth;
+            area.classList.add('shake');
+        }
+        function buildEggCracks() {
+            const svg = document.getElementById('eggCracks');
+            svg.innerHTML = '';
+            // Generate 15 jagged lines radiating from center
+            for (let i = 0; i < 15; i++) {
+                let x = 100, y = 100;
+                const angle = (i / 15) * Math.PI * 2;
+                let d = `M ${x} ${y}`;
+                let len = 0;
+                while (len < 80) {
+                    const step = 8 + Math.random() * 15;
+                    x += Math.cos(angle + (Math.random() - 0.5) * 0.8) * step;
+                    y += Math.sin(angle + (Math.random() - 0.5) * 0.8) * step;
+                    d += ` L ${x} ${y}`;
+                    len += step;
+                }
+                const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                p.setAttribute('d', d);
+                // Random stroke length for each crack
+                const dash = 50 + Math.random() * 50;
+                p.setAttribute('stroke-dasharray', dash);
+                p.setAttribute('stroke-dashoffset', dash);
+                p.style.opacity = 0.8;
+                svg.appendChild(p);
+            }
+        }
+        function updateEggCracksVisual(pct) {
+            const svg = document.getElementById('eggCracks');
+            const paths = Array.from(svg.children);
+            const visibleCount = Math.floor((pct / 100) * paths.length);
+            paths.forEach((p, i) => {
+                if (i < visibleCount) {
+                    p.style.strokeDashoffset = "0"; // reveal
+                }
+            });
+        }
+
+
+        /* ─── CORE LOOP LOGIC ─── */
+        function startGame() {
+            initAudio();
+            try { document.getElementById('bgm').play(); } catch (e) { }
+            document.getElementById('screen-home').classList.remove('active');
+            document.getElementById('screen-game').classList.add('active');
+            buildEggCracks();
+            S.qIdx = 0;
+            renderQuestion();
+        }
+
+        function updateProgress() {
+            const pct = Math.floor((S.qIdx / TOTAL_QUESTIONS) * 100);
+            document.getElementById('progFill').style.width = pct + '%';
+            document.getElementById('progText').textContent = `覺醒進度 ${pct}%`;
+            updateEggCracksVisual(pct);
+        }
+
+        function processHit() {
+            sfxHit();
+            sfxCrack();
+            shakeEgg();
+            spawnParticles(4);
+        }
+
+        function renderQuestion() {
+            if (S.qIdx >= TOTAL_QUESTIONS) {
+                calcAndEnd();
+                return;
+            }
+            updateProgress();
+
+            const q = QUESTIONS[S.qIdx];
+            document.getElementById('qTitle').textContent = q.title;
+            document.getElementById('qDesc').innerHTML = q.desc.replace('\n', '<br>');
+
+            const box = document.getElementById('qOpts');
+            box.innerHTML = '';
+
+            // Reset internal scenario/multi state for this step
+            S.curMultiSelection = [];
+            S.curScenarioBest = null;
+
+            if (q.type !== 'ability') {
+                box.classList.add('grid-2');
+            } else {
+                box.classList.remove('grid-2');
+            }
+
+            q.opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+
+                if (q.type === 'scenario') {
+                    btn.innerHTML = `<div class="scenario-badge">?</div> <div>${opt.t}</div>`;
+                    btn.onclick = () => handleScenarioClick(q, opt, btn, box);
+                } else if (q.type === 'multi') {
+                    btn.textContent = opt.t;
+                    btn.onclick = () => handleMultiClick(q, opt, btn, box);
+                } else {
+                    btn.textContent = opt.t;
+                    btn.onclick = () => handleSingleClick(q, opt.v, btn);
+                }
+                box.appendChild(btn);
+            });
+        }
+
+        // Handler: Single Choice (Grade, Clarity, Values2, Abilities)
+        function handleSingleClick(q, val, btn) {
+            btn.classList.add('sel');
+            processHit();
+
+            // Save state
+            if (q.type === 'ability') S.abilities[q.ab.id] = val;
+            else S.answers[q.key] = val;
+
+            // Advance
+            setTimeout(() => { S.qIdx++; renderQuestion(); }, 200);
+        }
+
+        // Handler: Multi Choice (Values Q1)
+        function handleMultiClick(q, opt, btn, box) {
+            const max = q.max;
+            if (btn.classList.contains('sel')) {
+                // Deselect
+                btn.classList.remove('sel');
+                S.curMultiSelection = S.curMultiSelection.filter(v => v !== opt.v);
+                sfxHit();
+            } else {
+                if (S.curMultiSelection.length >= max) return; // limit reached
+                btn.classList.add('sel');
+                S.curMultiSelection.push(opt.v);
+                processHit();
+
+                if (S.curMultiSelection.length === max) {
+                    // Save and advance
+                    S.answers[q.key] = [...S.curMultiSelection];
+                    // Disable other buttons instantly
+                    Array.from(box.children).forEach(b => { if (!b.classList.contains('sel')) b.classList.add('disabled'); });
+                    setTimeout(() => { S.qIdx++; renderQuestion(); }, 350);
+                }
+            }
+        }
+
+        // Handler: Scenario (Best/Worst sequence)
+        function handleScenarioClick(q, opt, btn, box) {
+            if (S.curScenarioBest === null) {
+                // 1st click = BEST
+                S.curScenarioBest = opt.oIdx;
+                btn.classList.add('sel-best');
+                btn.querySelector('.scenario-badge').textContent = '👍';
+                document.getElementById('qDesc').innerHTML = '🎯 已選擇最想做。 <br><span style="color:#f87171">👇 現在請選擇1個「絕對不想做」的地雷</span>';
+                processHit();
+            } else {
+                // 2nd click = WORST
+                if (opt.oIdx === S.curScenarioBest) {
+                    // Undoing best
+                    S.curScenarioBest = null;
+                    btn.classList.remove('sel-best');
+                    btn.querySelector('.scenario-badge').textContent = '?';
+                    document.getElementById('qDesc').innerHTML = q.desc.replace('\n', '<br>');
+                    sfxHit();
+                    return;
+                }
+
+                btn.classList.add('sel-worst');
+                btn.querySelector('.scenario-badge').textContent = '👎';
+                processHit();
+
+                // Save and advance
+                S.scenariosBest[q.qNum] = S.curScenarioBest;
+                S.scenariosWorst[q.qNum] = opt.oIdx;
+
+                Array.from(box.children).forEach(b => { if (!b.classList.contains('sel-best') && !b.classList.contains('sel-worst')) b.classList.add('disabled'); });
+
+                setTimeout(() => { S.qIdx++; renderQuestion(); }, 350);
+            }
+        }
+
+
+        /* ─── SCORING & END ─── */
+        function calcAndEnd() {
+            processHit(); // Final shatter hit
+            sfxReveal(); // Grand reveal!
+            document.getElementById('progFill').style.width = '100%';
+            document.getElementById('progText').textContent = `覺醒完成 100%`;
+            updateEggCracksVisual(100);
+
+            // BIG EXPLOSION
+            const egg = document.getElementById('eggImg');
+            egg.style.transform = 'scale(1.5)';
+            egg.style.filter = 'brightness(2)';
+            for (let i = 0; i < 3; i++) setTimeout(() => spawnParticles(Math.random() * 10 + 10), i * 100);
+
+            setTimeout(() => {
+                // Compute Scores
+                const interest = {}, ability = {}, values = {};
+                GROUPS.forEach(g => { interest[g] = 0; ability[g] = 0; values[g] = 0; });
+
+                // Scenarios mapped to Interest
+                RAW_SCENARIOS.forEach((sc, idx) => {
+                    const qNum = idx + 1;
+                    const b = S.scenariosBest[qNum];
+                    const w = S.scenariosWorst[qNum];
+                    sc.o.forEach((opt, oi) => {
+                        if (oi === b) interest[opt.g] += 5;
+                        else if (oi === w) interest[opt.g] -= 5;
+                        else interest[opt.g] += 1;
+                    });
+                });
+
+                // Abilities
+                RAW_ABILITIES.forEach(ab => {
+                    const val = S.abilities[ab.id];
+                    const pts = val === 'good' ? 3 : val === 'avg' ? 1 : 0;
+                    ab.g.forEach(g => ability[g] += pts);
+                    if (val === 'weak') ab.g.forEach(g => ability[g] -= 2);
+                });
+
+                // Values
+                const v1 = S.answers['val1'] || [];
+                v1.forEach(vk => { if (VALUES_MAP[vk]) VALUES_MAP[vk].groups.forEach(g => values[g] += 2); });
+                const v2 = S.answers['val2'];
+                if (v2 && VALUES_MAP[v2]) VALUES_MAP[v2].groups.forEach(g => values[g] += 5);
+
+                // Normalize 0-100
+                const norm = (obj) => {
+                    const v = Object.values(obj), mn = Math.min(...v), mx = Math.max(...v), rng = mx - mn || 1;
+                    const res = {};
+                    GROUPS.forEach(g => res[g] = Math.round((obj[g] - mn) / rng * 100));
+                    return res;
+                };
+                const ni = norm(interest), na = norm(ability), nv = norm(values);
+
+                // Final Weight: 50% Interest, 30% Ability, 20% Values
+                const final = {};
+                GROUPS.forEach(g => {
+                    final[g] = Math.round(ni[g] * 0.5 + na[g] * 0.3 + nv[g] * 0.2);
+                });
+
+                // Find Top 1
+                const top1 = Object.entries(final).sort((a, b) => b[1] - a[1])[0][0];
+                window._resultScores = final;
+                window._topName = top1;
+                window._monsterImgPath = MONSTERS[top1] || MONSTERS['資訊學群'];
+
+                // Show Result
+                document.getElementById('resMonsterImg').src = window._monsterImgPath;
+                document.getElementById('screen-game').classList.remove('active');
+                document.getElementById('screen-result').classList.add('active');
+
+            }, 1000);
+        }
+
+        /* ─── RESULT ACTIONS ─── */
+        function shareIG() {
+            sfxHit();
+            // Use Web Share API if mobile
+            if (navigator.share) {
+                navigator.share({
+                    title: '職群怪物圖鑑',
+                    text: `我覺醒的變異體質是「${window._topName}」，推薦你也來測測看！`,
+                    url: window.location.href // Change to your public URL if available
+                }).catch(e => {
+                    showToast('截圖分享到 IG 吧！');
+                });
+            } else {
+                showToast('請使用手機長按圖片儲存，再發布到 IG ！');
+            }
+        }
+
+        function openEmail() {
+            sfxHit();
+            document.getElementById('emailModal').classList.add('active');
+        }
+
+        function submitEmail() {
+            const em = document.getElementById('emailInput').value.trim();
+            if (!em || !em.includes('@')) {
+                showToast('⚠️ 請輸入正確的信箱');
+                return;
+            }
+            sfxHit();
+            const btn = document.getElementById('btnSendEmail');
+            btn.textContent = '寄送中...';
+            btn.style.opacity = 0.5;
+
+            // Fire to GAS
+            fetch("https://script.google.com/macros/s/AKfycbwC9UTPJRnWCn0ouPPJr958wL2vV9RIUdxL51lyedU40gaSUZkXxA6EWZZPik8kt_BG/exec", {
+                method: "POST", mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: em, topGroup: window._topName, scores: window._resultScores,
+                    raw: S
+                })
+            }).then(() => {
+                showToast('✅ 備份報告已寄出，請查收信箱');
+                document.getElementById('emailModal').classList.remove('active');
+                btn.textContent = '確認送出';
+                btn.style.opacity = 1;
+            }).catch(() => {
+                showToast('✅ 已成功記錄寄送請求');
+                document.getElementById('emailModal').classList.remove('active');
+                btn.textContent = '確認送出';
+                btn.style.opacity = 1;
+            });
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    </script>
 </body>
+
 </html>
