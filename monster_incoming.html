@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>怪物來襲！職涯本能覺醒</title>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=IM+Fell+English+SC&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --card-dark: #121212;
+            --primary-glow: #9d4edd;
+            --secondary-glow: #c77dff;
+            --blood-red: #880808;
+            --text-main: #e0e0e0;
+            --text-dim: #888;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .scary-text {
+            font-family: 'Creepster', cursive;
+            letter-spacing: 2px;
+        }
+
+        .gothic-text {
+            font-family: 'IM Fell English SC', serif;
+        }
+
+        /* 背景裝飾 */
+        #background-fx {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+            background: radial-gradient(circle at 50% 50%, #1a1025 0%, #050505 100%);
+        }
+
+        .floating-book {
+            position: absolute;
+            font-size: 2rem;
+            animation: fly 10s linear infinite;
+            filter: grayscale(1) sepia(1) contrast(1.5);
+        }
+
+        @keyframes fly {
+            0% { transform: translate(-100px, 100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(120vw, -100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* 導覽與進度 */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 6px;
+            background: #222;
+            z-index: 1000;
+        }
+
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--blood-red), var(--primary-glow));
+            box-shadow: 0 0 15px var(--primary-glow);
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 內容區塊 */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 100px 20px;
+        }
+
+        section {
+            display: none;
+            animation: fadeIn 0.8s forwards;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 引入頁面 */
+        #intro {
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            color: var(--blood-red);
+            text-shadow: 0 0 20px rgba(136, 8, 8, 0.6);
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+
+        .hero-sub {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            margin-bottom: 40px;
+        }
+
+        .btn-start {
+            background: none;
+            border: 2px solid var(--primary-glow);
+            color: var(--primary-glow);
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-start:hover {
+            background: var(--primary-glow);
+            color: white;
+            box-shadow: 0 0 30px var(--primary-glow);
+            transform: scale(1.05) rotate(-2deg);
+        }
+
+        /* 測驗卡片 */
+        .card {
+            background: var(--card-dark);
+            border: 1px solid #333;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--primary-glow);
+            transform: scale(1.02);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: var(--secondary-glow);
+        }
+
+        .option-group {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            background: #202020;
+            padding: 15px 20px;
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option:hover {
+            background: #2a2a2a;
+            border-color: var(--secondary-glow);
+        }
+
+        .option.selected {
+            background: rgba(157, 78, 221, 0.2);
+            border-color: var(--primary-glow);
+            box-shadow: inset 0 0 10px var(--primary-glow);
+        }
+
+        .rank-badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        /* 結果頁面 */
+        #results {
+            padding: 20px 0;
+        }
+
+        .monster-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%);
+            border: 8px solid #333;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            margin-bottom: 40px;
+        }
+
+        .monster-rarity {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2.5rem;
+            color: #ffd700;
+            font-family: 'Creepster', cursive;
+            transform: rotate(15deg);
+            text-shadow: 0 0 10px #ffd700;
+        }
+
+        .monster-img-frame {
+            width: 100%;
+            height: 350px;
+            border: 3px solid #444;
+            background: #000;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .monster-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: contrast(1.1) brightness(0.8) sepia(0.2);
+        }
+
+        .monster-name {
+            font-size: 3rem;
+            color: var(--blood-red);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .monster-quote {
+            font-style: italic;
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 0 20px;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-box {
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        button.btn-next {
+            background: var(--blood-red);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            float: right;
+        }
+
+        button.btn-next:disabled {
+            background: #333;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .action-btns {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid var(--secondary-glow);
+            background: none;
+            color: var(--secondary-glow);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-action:hover {
+            background: var(--secondary-glow);
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div id="background-fx">
+        <div class="floating-book" style="left: 10%; top: 20%;">📕</div>
+        <div class="floating-book" style="left: 80%; top: 15%; animation-delay: -3s;">📗</div>
+        <div class="floating-book" style="left: 30%; top: 70%; animation-delay: -7s;">📘</div>
+        <div class="floating-book" style="left: 70%; top: 80%; animation-delay: -5s;">📖</div>
+    </div>
+
+    <div class="progress-container">
+        <div id="progressBar"></div>
+    </div>
+
+    <div class="container">
+        <!-- INTRO -->
+        <section id="intro" class="active">
+            <h1 class="hero-title scary-text">怪物來襲！</h1>
+            <p class="hero-sub gothic-text">
+                教科書是沉重的墓碑，老師的眼神是冰冷的枷鎖。<br>
+                在社會壓力的圍攻下，你體內的怪物本能即將覺醒...
+            </p>
+            <button class="btn-start scary-text" onclick="startAwakening()">開始覺醒測驗</button>
+        </section>
+
+        <!-- STAGE 0: IDENTITY -->
+        <section id="stage0" class="stage">
+            <h2 class="scary-text">第 0 波：身分識別</h2>
+            <div class="card">
+                <h3>你目前扮演的軀殼是？</h3>
+                <div id="gradeSelection" class="option-group">
+                    <div class="option" data-val="junior">國中生 (尚未被重壓完全碾碎)</div>
+                    <div class="option" data-val="senior">高中生 (正在承受教科書的處刑)</div>
+                    <div class="option" data-val="uni">大學生 (試圖在廢墟中重建自我)</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>你對未來方向的直覺？</h3>
+                <div id="claritySelection" class="option-group">
+                    <div class="option" data-val="low">一片漆黑 (混沌狀態)</div>
+                    <div class="option" data-val="mid">微弱月光 (模糊方向)</div>
+                    <div class="option" data-val="high">地獄火光 (明確目標)</div>
+                </div>
+            </div>
+            <button class="btn-next scary-text" id="btn0" onclick="nextStage(1)" disabled>下一步</button>
+        </section>
+
+        <!-- STAGE 1: VALUES -->
+        <section id="stage1" class="stage">
+            <h2 class="scary-text">第 1 波：教科書轟炸</h2>
+            <div class="card">
+                <h3>面對排山倒海的知識，你最想守護的「靈魂核心」是？ (選 2 項)</h3>
+                <div id="vq1Selection" class="option-group">
+                    <div class="option" data-id="achieve">成就感 (用能力證明自己的存在)</div>
+                    <div class="option" data-id="help">利他 (在黑暗中拉他人一把)</div>
+                    <div class="option" data-id="create">創造力 (撕裂現實，創造新世界)</div>
+                    <div class="option" data-id="explore">探索尋真 (挖出深埋的真相)</div>
+                    <div class="option" data-id="stable">安穩 (建立永不塌陷的堡壘)</div>
+                    <div class="option" data-id="impact">影響力 (操縱風向，引領族群)</div>
+                </div>
+            </div>
+            <button class="btn-next scary-text" id="btn1" onclick="nextStage(2)" disabled>下一步</button>
+        </section>
+
+        <!-- STAGE 2: ABILITIES -->
+        <section id="stage2" class="stage">
+            <h2 class="scary-text">第 2 波：老師的凝視</h2>
+            <p style="margin-bottom: 20px; color: var(--text-dim);">在嚴厲的目光下，你磨練出了哪些致命本能？</p>
+            <div id="abilityList"></div>
+            <button class="btn-next scary-text" id="btn2" onclick="nextStage(3)" disabled>下一步</button>
+        </section>
+
+        <!-- STAGE 3: SCENARIOS -->
+        <section id="stage3" class="stage">
+            <h2 class="scary-text">第 3 波：社會壓力暴雨</h2>
+            <p style="margin-bottom: 20px; color: var(--text-dim);">當世界試圖將你塑造成平庸的模樣，你會如何反抗？</p>
+            <div id="scenarioList" style="display: grid; gap: 30px;"></div>
+            <button class="btn-next scary-text" id="btn3" onclick="showResults()" disabled>覺醒！顯現怪物本質</button>
+        </section>
+
+        <!-- RESULTS -->
+        <section id="results">
+            <div id="monsterCardRegion">
+                <div class="monster-card">
+                    <div class="monster-rarity" id="resRarity">SSR</div>
+                    <h2 class="monster-name scary-text" id="resName">怪物名稱</h2>
+                    <div class="monster-img-frame">
+                        <div id="imgLoader" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">喚醒影像中...</div>
+                        <img id="resImg" class="monster-img" src="" alt="Monster">
+                    </div>
+                    <p class="monster-quote gothic-text" id="resQuote">「這是你的怪物格言。」</p>
+                </div>
+
+                <div class="chart-grid">
+                    <div class="chart-box">
+                        <h3 style="margin-bottom: 15px;">📊 怪物本能分佈 (RIASEC)</h3>
+                        <canvas id="riasecChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h3 style="margin-bottom: 15px;">🔍 職場屬性解析</h3>
+                        <div id="attrAnalysis" style="line-height: 1.6; font-size: 0.9rem;"></div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 30px;">
+                    <h3 class="scary-text">⚔️ 適合的戰場 (職業方向)</h3>
+                    <div id="resCareers" style="margin-top: 15px; font-size: 1.2rem; color: var(--primary-glow);"></div>
+                </div>
+
+                <div class="card">
+                    <h3 class="scary-text">⛓️ 怪物成長建議</h3>
+                    <div id="resActions" style="margin-top: 15px; display: grid; gap: 15px;"></div>
+                </div>
+            </div>
+
+            <div class="action-btns">
+                <button class="btn-action" onclick="saveAsImage()">💾 儲存怪物卡牌</button>
+                <button class="btn-action" onclick="location.reload()">🔄 再次覺醒</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        // --- DATA ---
+        const GROUPS = [
+            '資訊學群', '工程學群', '數理化學學群', '醫藥衛教學群', '生命科學學群', '生物資源學群',
+            '地球與環境學群', '大眾傳播學群', '藝術學群', '建築與設計學群', '文史哲學群', '外語學群',
+            '財經學群', '管理學群', '法政學群', '社會與心理學群', '教育學群', '遊憩與運動學群'
+        ];
+
+        const MONSTER_DATA = {
+            '資訊學群': { 
+                title: '代碼寄生獸', rarity: 'SR', 
+                quote: '你不是不想聽人講話，你只是覺得直接跟機器溝通比較不會中風。',
+                img: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=400',
+                attr: '高邏輯、偏執、喜好純粹的數位秩序。'
+            },
+            '工程學群': { title: '修羅哥布林', rarity: 'R', quote: '萬物皆可修，唯有愚鈍的人心是我修不動的齒輪。', img: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=400', attr: '強大的動手能力，對機械結構有病態的直覺。' },
+            '數理化學學群': { title: '真理巫妖', rarity: 'SSR', quote: '在絕對的公式面前，情感不過是隨機產生的雜訊。', img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=400', attr: '極端理智，能洞察物質與數字背後的終極法則。' },
+            '醫藥衛教學群': { title: '聖光天使', rarity: 'SR', quote: '縫補破碎的肉體，卻發現最難癒合的是靈魂的洞。', img: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=400', attr: '高同理心但情緒壓抑，在生死邊緣行走。' },
+            '生命科學學群': { title: '基因煉金術師', rarity: 'SSR', quote: '進化不是天賦，是我在試管裡親手熬出來的殘酷。', img: 'https://images.unsplash.com/photo-1532187875605-2fe35f74ebe2?auto=format&fit=crop&q=80&w=400', attr: '對生命的微觀結構感興趣，熱衷於解構與組組。' },
+            '生物資源學群': { title: '森之德魯伊', rarity: 'SR', quote: '泥土比語言更有力，蟲鳴比音樂更誠實。', img: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=400', attr: '親近自然，對動植物的溝通優於對人類。' },
+            '地球與環境學群': { title: '觀星樹人', rarity: 'SSR', quote: '我活了千年，看著星光墜落，也看著你們這群微塵自掘墳墓。', img: 'https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?auto=format&fit=crop&q=80&w=400', attr: '宏觀視野，對時間與大地變遷極其敏感。' },
+            '建築與設計學群': { title: '偏執造物主', rarity: 'SR', quote: '歪斜才是最深刻的秩序，對齊只是平庸者的藉口。', img: 'https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=400', attr: '完美的空間感與結構美學，拒絕平庸的設計。' },
+            '藝術學群': { title: '幻象獨角獸', rarity: 'SSR', quote: '現實太醜，所以我用畫筆撕開一個美麗的創口。', img: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=400', attr: '無限的創造力，情緒起伏劇烈，用視覺感染世界。' },
+            '大眾傳播學群': { title: '風向變形怪', rarity: 'R', quote: '我沒有面孔，我只是你們集體恐懼與慾望的投影。', img: 'https://images.unsplash.com/photo-1492724441997-5dc865305da7?auto=format&fit=crop&q=80&w=400', attr: '極高的社群敏銳度，擅長操控視覺與訊息。' },
+            '外語學群': { title: '破壁雙首龍', rarity: 'R', quote: '當你能聽懂地獄的耳語，天堂的讚美詩就顯得格外單調。', img: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400', attr: '語言天賦異稟，是不同時空與文化間的偷渡者。' },
+            '文史哲學群': { title: '跨時空藏書靈', rarity: 'SSR', quote: '歷史是灰塵堆疊的噩夢，而我負責在夢中驚醒。', img: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=400', attr: '深邃的思想，長於脈絡推敲，與靈魂對話。' },
+            '教育學群': { title: '播種妖精', rarity: 'R', quote: '我在你們貧瘠的心靈播種，雖然我知道大多數種子會長成瘋狂。', img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=400', attr: '渴望傳遞理念，具有極強的耐心與說服力。' },
+            '法政學群': { title: '秩序地獄犬', rarity: 'SR', quote: '法律是束縛野獸的繩索，但誰來束縛握繩索的人？', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=400', attr: '正義感或是對權力的渴望，對規範有極致的理解。' },
+            '社會與心理學群': { title: '讀心深淵水母', rarity: 'SR', quote: '別試圖掩飾，你的大腦在我的觸鬚裡就像透明的冰塊。', img: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&q=80&w=400', attr: '透視人心的能力，擅長分析群體行為。' },
+            '管理學群': { title: '暴君獅鷲', rarity: 'R', quote: '混亂是階梯，而我是唯一的攀登者。', img: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=400', attr: '強大的掌控慾，擅長資源分配與戰略規劃。' },
+            '財經學群': { title: '金幣巨龍', rarity: 'R', quote: '每一張鈔票都帶著靈魂的體溫，我喜歡收集這些餘溫。', img: 'https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&q=80&w=400', attr: '金錢嗅覺靈敏，能看破資本流動的詭計。' },
+            '遊憩與運動學群': { title: '滿血狂戰士', rarity: 'R', quote: '只要還能奔跑，世界就不會塌陷；或者我跑得夠快，塌陷就追不上我。', img: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=400', attr: '驚人的生命力，追求生理上的極限突破。' }
+        };
+
+        const ABILITIES_LIST = [
+            { id: 'logic', label: '邏輯破壞', desc: '能一眼看穿混亂中的規則', groups: ['數理化學學群', '資訊學群', '工程學群', '法政學群'] },
+            { id: 'writing', label: '詛咒文墨', desc: '文字具有蠱惑人心或精準傳達的力量', groups: ['文史哲學群', '大眾傳播學群', '外語學群', '教育學群'] },
+            { id: 'spatial', label: '異度感官', desc: '對空間、構造有超乎常人的直覺', groups: ['建築與設計學群', '藝術學群', '工程學群'] },
+            { id: 'empathy', label: '靈魂共振', desc: '能讀取並梳理他人的情緒雜訊', groups: ['社會與心理學群', '教育學群', '醫藥衛教學群'] },
+            { id: 'math', label: '數字詛咒', desc: '對數字極其敏銳，能看穿公式', groups: ['數理化學學群', '財經學群', '工程學群'] },
+            { id: 'nature', label: '荒野連結', desc: '與非人生物或生態系統有血脈感應', groups: ['生命科學學群', '生物資源學群', '地球與環境學群'] },
+            { id: 'leadership', label: '部落統帥', desc: '習慣分配任務，引引領族群方向', groups: ['管理學群', '法政學群', '大眾傳播學群', '教育學群'] }
+        ];
+
+        const SCENARIOS_LIST = [
+            {
+                id: 1, title: '面對混亂的社群媒體', options: [
+                    { text: '製作具有精神污染力的創意視覺', group: '大眾傳播學群' },
+                    { text: '撰寫千字長文解剖社會現狀', group: '文史哲學群' },
+                    { text: '優化演算法讓更多人陷入迷戀', group: '資訊學群' },
+                    { text: '設計一套具有詭譎美感的版面', group: '藝術學群' }
+                ]
+            },
+            {
+                id: 2, title: '若你被要求解決環境危機', options: [
+                    { text: '培育能吞噬污染的合成生物', group: '生命科學學群' },
+                    { text: '建造精密的自動化淨化堡壘', group: '工程學群' },
+                    { text: '感化民眾集體改變心靈意識', group: '社會與心理學群' },
+                    { text: '撰寫法律條文強制執行秩序', group: '法政學群' }
+                ]
+            },
+            {
+                id: 3, title: '當你想獲取更多財產時', options: [
+                    { text: '在交易市場中尋找瘋狂的波動', group: '財經學群' },
+                    { text: '組建軍隊或公司進行強勢擴張', group: '管理學群' },
+                    { text: '發明一種能改變世界的終極武裝', group: '工程學群' },
+                    { text: '將歷史文物轉化為高價的IP', group: '文史哲學群' }
+                ]
+            },
+            {
+                id: 4, title: '當你身處戰鬥中（體育/競速）', options: [
+                    { text: '用最純粹的力量粉碎障礙', group: '遊憩與運動學群' },
+                    { text: '計算風速與拋物線精準打擊', group: '數理化學學群' },
+                    { text: '觀察對手的情緒與弱點誘導出錯', group: '社會與心理學群' },
+                    { text: '建立團隊的攻防體系', group: '教育學群' }
+                ]
+            },
+            {
+                id: 5, title: '當你要建立一個秘密基地', options: [
+                    { text: '設計奇異且不符合常規的空間結構', group: '建築與設計學群' },
+                    { text: '在地圖上尋找最有利的地質隱蔽點', group: '地球與環境學群' },
+                    { text: '用強大的資安屏障完全抹除痕跡', group: '資訊學群' },
+                    { text: '在基地中種植迷幻且致命的植物', group: '生物資源學群' }
+                ]
+            }
+        ];
+
+        const RIASEC_MAP = {
+            R: ['工程學群', '生物資源學群', '遊憩與運動學群'],
+            I: ['數理化學學群', '生命科學學群', '地球與環境學群'],
+            A: ['藝術學群', '大眾傳播學群', '建築與設計學群'],
+            S: ['教育學群', '社會與心理學群', '醫藥衛教學群'],
+            E: ['管理學群', '財經學群', '法政學群'],
+            C: ['資訊學群', '外語學群', '文史哲學群']
+        };
+
+        const CAREER_MAP = {
+            '資訊學群': '軟體工程師、AI科學家、資料科學家、資安專家',
+            '工程學群': '機械工程師、半導體工程師、電機技師、自動化專家',
+            '數理化學學群': '研究員、分析師、精算師、材料開發',
+            '醫藥衛教學群': '醫師、藥師、護理師、公衛專家',
+            '生命科學學群': '生技研發、基因工程、藥品研製',
+            '生物資源學群': '獸醫、農技專家、食品研發、森林保育',
+            '地球與環境學群': '地質學家、氣象預報、環境評估師',
+            '建築與設計學群': '建築師、室內設計、都市規劃、展覽設計',
+            '藝術學群': '藝術家、遊戲美術、UI/UX設計、策展人',
+            '大眾傳播學群': '影音創作者、記者、廣告企劃、公關經理',
+            '外語學群': '翻譯官、國際業務、外交官、在地化顧問',
+            '文史哲學群': '編輯、作家、文化行政、劇本創作',
+            '教育學群': '教師、教育科技、教材開發、企業培訓',
+            '法政學群': '律師、司法官、公務員、智財權專家',
+            '社會與心理學群': '諮商心理師、社工、市調、人資專員',
+            '管理學群': '專案經理、創業家、行銷經理、營運主管',
+            '財經學群': '會計師、理財顧問、精算師、FinTech工程師',
+            '遊憩與運動學群': '體育教練、休閒企劃、防護員、球探'
+        };
+
+        // --- STATE ---
+        const state = {
+            grade: null,
+            clarity: null,
+            values: [],
+            abilities: {},
+            scenarios: {}, 
+            scores: {}
+        };
+
+        GROUPS.forEach(g => state.scores[g] = 0);
+
+        // --- CONTROL ---
+        function startAwakening() {
+            document.getElementById('intro').style.display = 'none';
+            goToStage(0);
+        }
+
+        function goToStage(n) {
+            document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+            document.getElementById('stage' + n).classList.add('active');
+            updateProgress(n);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateProgress(n) {
+            const pct = (n / 4) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        }
+
+        function nextStage(n) {
+            goToStage(n);
+        }
+
+        // --- UI BUILDERS ---
+        function initUI() {
+            // Stage 0 
+            const gSelection = document.getElementById('gradeSelection');
+            gSelection.querySelectorAll('.option').forEach(opt => {
+                opt.onclick = () => {
+                    gSelection.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    state.grade = opt.dataset.val;
+                    checkDisable(0);
+                };
+            });
+            const cSelection = document.getElementById('claritySelection');
+            cSelection.querySelectorAll('.option').forEach(opt => {
+                opt.onclick = () => {
+                    cSelection.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    state.clarity = opt.dataset.val;
+                    checkDisable(0);
+                };
+            });
+
+            // Stage 1
+            const vq1Selection = document.getElementById('vq1Selection');
+            vq1Selection.querySelectorAll('.option').forEach(opt => {
+                opt.onclick = () => {
+                    if (opt.classList.contains('selected')) {
+                        opt.classList.remove('selected');
+                    } else {
+                        if (vq1Selection.querySelectorAll('.selected').length >= 2) return;
+                        opt.classList.add('selected');
+                    }
+                    state.values = Array.from(vq1Selection.querySelectorAll('.selected')).map(o => o.dataset.id);
+                    checkDisable(1);
+                };
+            });
+
+            // Stage 2
+            const abList = document.getElementById('abilityList');
+            ABILITIES_LIST.forEach(ab => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <h3>${ab.label}</h3>
+                    <p style="color:#666; font-size:0.9rem; margin-bottom:15px; font-style:italic;">"${ab.desc}"</p>
+                    <div class="option-group" style="display:flex; gap:10px;">
+                        <div class="option" style="flex:1" data-val="3">利爪 (強)</div>
+                        <div class="option" style="flex:1" data-val="1">鈍齒 (普)</div>
+                        <div class="option" style="flex:1" data-val="0">退化 (弱)</div>
+                    </div>
+                `;
+                const opts = div.querySelectorAll('.option');
+                opts.forEach(o => {
+                    o.onclick = () => {
+                        opts.forEach(x => x.classList.remove('selected'));
+                        o.classList.add('selected');
+                        state.abilities[ab.id] = parseInt(o.dataset.val);
+                        checkDisable(2);
+                    }
+                });
+                abList.appendChild(div);
+            });
+
+            // Stage 3
+            const scList = document.getElementById('scenarioList');
+            SCENARIOS_LIST.forEach(sc => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.id = 'sc-' + sc.id;
+                div.innerHTML = `
+                    <h3>${sc.title}</h3>
+                    <div class="option-group">
+                        ${sc.options.map((o, i) => `<div class="option" data-idx="${i}"><div class="rank-badge">?</div>${o.text}</div>`).join('')}
+                    </div>
+                `;
+                const opts = div.querySelectorAll('.option');
+                opts.forEach(o => {
+                    o.onclick = () => {
+                        const qid = sc.id;
+                        if (!state.scenarios[qid]) state.scenarios[qid] = { best: null, worst: null };
+                        const s = state.scenarios[qid];
+                        const idx = parseInt(o.dataset.idx);
+
+                        if (s.best === null) {
+                            s.best = idx;
+                            o.classList.add('selected');
+                            o.querySelector('.rank-badge').textContent = '最合';
+                        } else if (s.best === idx) {
+                            s.best = null;
+                            o.classList.remove('selected');
+                            o.querySelector('.rank-badge').textContent = '?';
+                        } else if (s.worst === null) {
+                            s.worst = idx;
+                            o.classList.add('selected');
+                            o.querySelector('.rank-badge').textContent = '最不';
+                            div.style.opacity = '0.6';
+                        } else if (s.worst === idx) {
+                            s.worst = null;
+                            o.classList.remove('selected');
+                            o.querySelector('.rank-badge').textContent = '?';
+                            div.style.opacity = '1';
+                        }
+                        checkDisable(3);
+                    }
+                });
+                scList.appendChild(div);
+            });
+        }
+
+        function checkDisable(n) {
+            let ok = false;
+            if (n === 0) ok = !!(state.grade && state.clarity);
+            if (n === 1) ok = state.values.length === 2;
+            if (n === 2) ok = Object.keys(state.abilities).length === ABILITIES_LIST.length;
+            if (n === 3) ok = Object.keys(state.scenarios).filter(k => state.scenarios[k].worst !== null).length === SCENARIOS_LIST.length;
+            
+            document.getElementById('btn' + n).disabled = !ok;
+        }
+
+        // --- CALCULATION ---
+        function calculate() {
+            GROUPS.forEach(g => state.scores[g] = 0);
+
+            // Values Map
+            const vMap = {
+                achieve: ['工程學群', '醫藥衛教學群', '管理學群', '財經學群'],
+                help: ['教育學群', '社會與心理學群'],
+                create: ['藝術學群', '建築與設計學群', '大眾傳播學群'],
+                explore: ['數理化學學群', '生命科學學群', '資訊學群', '地球與環境學群'],
+                stable: ['財經學群', '法政學群', '教育學群'],
+                impact: ['管理學群', '大眾傳播學群', '法政學群', '社會與心理學群']
+            };
+
+            state.values.forEach(v => {
+                if (vMap[v]) vMap[v].forEach(g => state.scores[g] += 6);
+            });
+
+            // Abilities List
+            ABILITIES_LIST.forEach(ab => {
+                const val = state.abilities[ab.id] || 0;
+                ab.groups.forEach(g => state.scores[g] += val * 4);
+            });
+
+            // Scenarios List
+            Object.keys(state.scenarios).forEach(qid => {
+                const sc = SCENARIOS_LIST.find(s => s.id == qid);
+                const s = state.scenarios[qid];
+                sc.options.forEach((opt, i) => {
+                    if (i === s.best) state.scores[opt.group] += 15;
+                    else if (i === s.worst) state.scores[opt.group] -= 10;
+                    else state.scores[opt.group] += 4;
+                });
+            });
+        }
+
+        function showResults() {
+            calculate();
+            goToStage('results');
+            
+            const sorted = GROUPS.slice().sort((a, b) => state.scores[b] - state.scores[a]);
+            const topGroup = sorted[0];
+            const data = MONSTER_DATA[topGroup] || MONSTER_DATA['資訊學群'];
+
+            document.getElementById('resName').textContent = data.title;
+            document.getElementById('resRarity').textContent = data.rarity;
+            document.getElementById('resQuote').textContent = data.quote;
+            document.getElementById('resImg').src = data.img;
+            document.getElementById('imgLoader').style.display = 'none';
+            document.getElementById('attrAnalysis').textContent = data.attr;
+
+            document.getElementById('resCareers').textContent = CAREER_MAP[topGroup] || '多元發展領域';
+            
+            document.getElementById('resActions').innerHTML = `
+                <div class="card" style="margin-bottom:0">
+                    <strong>⚔️ 戰鬥任務：</strong> 探詢 "${topGroup}" 的奧秘。建議關注：${CAREER_MAP[topGroup]}。
+                </div>
+            `;
+            
+            renderChart();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('riasecChart').getContext('2d');
+            const riasecScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+            
+            Object.keys(RIASEC_MAP).forEach(key => {
+                RIASEC_MAP[key].forEach(g => riasecScores[key] += (state.scores[g] || 0));
+            });
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['現實型 R', '研究型 I', '藝術型 A', '社會型 S', '企業型 E', '傳統型 C'],
+                    datasets: [{
+                        label: '怪物本能',
+                        data: Object.values(riasecScores),
+                        backgroundColor: 'rgba(157, 78, 221, 0.4)',
+                        borderColor: '#c77dff',
+                        pointBackgroundColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            grid: { color: '#333' },
+                            angleLines: { color: '#333' },
+                            pointLabels: { color: '#aaa', font: { family: 'IM Fell English SC', size: 12 } },
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function saveAsImage() {
+            const region = document.getElementById('monsterCardRegion');
+            html2canvas(region, {
+                backgroundColor: '#050505',
+                scale: 2,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'my-monster.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        window.onload = initUI;
+    </script>
+</body>
+</html>
