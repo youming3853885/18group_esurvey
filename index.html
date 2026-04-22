@@ -232,12 +232,12 @@
 
         .progress-text {
             text-align: center;
-            font-size: 0.8rem;
-            color: #fff;
+            font-size: 0.9rem;
+            color: #d8b4fe;
             margin-top: 0.5rem;
             font-weight: 900;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
-            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 5px #000;
+            letter-spacing: 2px;
         }
 
         /* ── Egg Area ── */
@@ -327,13 +327,13 @@
         /* Particles */
         .debris {
             position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #ffd700;
+            width: 6px;
+            height: 6px;
+            background: #a855f7;
             border-radius: 50%;
             pointer-events: none;
             z-index: 50;
-            box-shadow: 0 0 12px #ffaa00;
+            box-shadow: 0 0 10px #d8b4fe, 0 0 20px #a855f7;
         }
 
         /* ── Panel / Question Area ── */
@@ -1284,29 +1284,47 @@
         /* ─── VISUAL FX ─── */
         function spawnParticles(amount) {
             const egg = document.getElementById('eggContainer');
+            if (!egg) return;
             const rect = egg.getBoundingClientRect();
+            // Center of the egg relative to viewport
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
 
             for (let i = 0; i < amount; i++) {
                 const p = document.createElement('div');
                 p.className = 'debris';
+                // Start position
                 p.style.left = cx + 'px';
                 p.style.top = cy + 'px';
                 document.body.appendChild(p);
 
+                // Initial velocities
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 40 + Math.random() * 80;
-                const tx = Math.cos(angle) * speed;
-                const ty = Math.sin(angle) * speed - 50; // gravity bias
-                const rot = (Math.random() - 0.5) * 720;
+                const speed = Math.random() * 8 + 5;
+                let vx = Math.cos(angle) * speed;
+                let vy = Math.sin(angle) * speed - 8; // Initial upward pop
+                let x = cx;
+                let y = cy;
+                const gravity = 0.4;
+                let life = 1.0;
+                const decay = 0.015 + Math.random() * 0.02;
 
-                requestAnimationFrame(() => {
-                    p.style.transition = 'all 0.6s cubic-bezier(0.2, 1, 0.3, 1)';
-                    p.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(0)`;
-                    p.style.opacity = '0';
-                });
-                setTimeout(() => p.remove(), 600);
+                const animate = () => {
+                    x += vx;
+                    y += vy;
+                    vy += gravity;
+                    life -= decay;
+
+                    p.style.transform = `translate(${x - cx}px, ${y - cy}px) scale(${life})`;
+                    p.style.opacity = life;
+
+                    if (life > 0) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        p.remove();
+                    }
+                };
+                requestAnimationFrame(animate);
             }
         }
         function shakeEgg() {
@@ -1426,6 +1444,7 @@
             processHit();
 
             // Save state
+            spawnParticles(15); // Splash purple particles on answer
             if (q.type === 'ability') S.abilities[q.ab.id] = val;
             else S.answers[q.key] = val;
 
