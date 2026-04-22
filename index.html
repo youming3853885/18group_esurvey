@@ -56,12 +56,16 @@
         }
 
         body {
-            background: #050508;
+            background: #050508 url('background.webp') no-repeat center center fixed;
+            background-size: cover;
             color: #e2e8f0;
             font-family: 'Noto Sans TC', sans-serif;
             overflow: hidden;
             width: 100vw;
             height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         button {
@@ -80,10 +84,10 @@
             flex-direction: column;
             max-width: 480px;
             margin: 0 auto;
-            background: url('background.webp') no-repeat center center;
-            background-size: cover;
+            background: transparent;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 0 100px rgba(0,0,0,0.5);
         }
 
         /* ── Screen Management ── */
@@ -112,7 +116,8 @@
             color: #fff;
             font-size: 1.5rem;
             font-weight: 900;
-            background: radial-gradient(circle at 50% 50%, #2e1065 0%, #050508 100%);
+            background: #050508;
+            z-index: 1000;
         }
 
         .loading-spinner {
