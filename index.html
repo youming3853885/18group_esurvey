@@ -161,23 +161,24 @@
             transition: opacity 0.8s ease;
         }
 
-        .finger-pointer {
+        .arrow-pointer {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            bottom: 22%;
+            width: 50px;
+            height: 50px;
+            bottom: 18%;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
             pointer-events: none;
-            animation: fingerTap 1.2s infinite;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+            animation: arrowFloat 1.5s infinite ease-in-out;
+            filter: drop-shadow(0 0 15px #a855f7);
+            color: #d8b4fe;
         }
 
-        @keyframes fingerTap {
-            0% { transform: translateX(-50%) scale(1); opacity: 0.8; }
-            50% { transform: translateX(-50%) scale(0.85); opacity: 1; }
-            100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+        @keyframes arrowFloat {
+            0% { transform: translateX(-50%) translateY(0); opacity: 0.8; }
+            50% { transform: translateX(-50%) translateY(-15px); opacity: 1; }
+            100% { transform: translateX(-50%) translateY(0); opacity: 0.8; }
         }
 
         /* ── Core Game Header ── */
@@ -903,9 +904,9 @@
     <!-- ================= INTRO ================= -->
     <div class="app-container screen" id="screen-home" onclick="startGame()">
         <img src="book.webp" class="book-layer" id="bookLayer" alt="Book">
-        <div class="finger-pointer" id="fingerPointer">
-            <svg viewBox="0 0 24 24" width="60" height="60" fill="#fff">
-                <path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v3.74c1.21-.81 2-2.18 2-3.74C16 4.46 13.54 2 10.5 2S5 4.46 5 7.5c0 1.56.79 2.93 2 3.74V21a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-2.5h2V21a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-8.5c0-1.56-.79-2.93-2-3.74V7.5c0-1.38-1.12-2.5-2.5-2.5S9 6.12 9 7.5v3.74zM10.5 4c1.93 0 3.5 1.57 3.5 3.5S12.43 11 10.5 11 7 9.43 7 7.5 8.57 4 10.5 4z"/>
+        <div class="arrow-pointer" id="arrowPointer">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4l-8 8h5v8h6v-8h5z"/>
             </svg>
         </div>
     </div>
@@ -1665,7 +1666,7 @@
         function startGame() {
             sfxHit();
             const book = document.getElementById('bookLayer');
-            const finger = document.getElementById('fingerPointer');
+            const finger = document.getElementById('arrowPointer');
             
             if (book) book.classList.add('fade-out');
             if (finger) finger.classList.add('fade-out');
