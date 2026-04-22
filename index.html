@@ -1236,8 +1236,11 @@
         /* ─── AUDIO FX (Web Audio API synthesis) ─── */
         let ac = null;
         function initAudio() { 
-            if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); 
-            if (ac.state === 'suspended') ac.resume();
+            try {
+                if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); 
+                if (ac.state === 'suspended') ac.resume();
+                console.log("Audio Context State:", ac.state);
+            } catch(e) { console.error("Audio Init Error:", e); }
         }
         function sfxHit() {
             try {
@@ -1404,7 +1407,11 @@
         /* ─── CORE LOOP LOGIC ─── */
         function startGame() {
             initAudio();
-            try { document.getElementById('bgm').play(); } catch (e) { }
+            const bgm = document.getElementById('bgm');
+            if (bgm) {
+                bgm.volume = 0.6;
+                bgm.play().catch(err => console.log("BGM Play Error:", err));
+            }
             document.getElementById('screen-home').classList.remove('active');
             document.getElementById('screen-game').classList.add('active');
             buildEggCracks();
