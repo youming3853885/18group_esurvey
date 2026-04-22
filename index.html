@@ -1251,20 +1251,33 @@
         function sfxCrack() {
             try {
                 if (!ac) return;
-                const o = ac.createOscillator(), g = ac.createGain();
-                o.type = 'square'; g.connect(ac.destination); o.connect(g);
-                o.frequency.setValueAtTime(100, ac.currentTime);
-                o.frequency.linearRampToValueAtTime(50, ac.currentTime + 0.2);
-                g.gain.setValueAtTime(0.4, ac.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.2);
+                // High-frequency "crunch" sound using filtered noise
+                const g = ac.createGain();
+                g.connect(ac.destination);
 
-                // noise
-                const n = ac.sampleRate * 0.1, b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0);
-                for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
-                const s = ac.createBufferSource(); s.buffer = b;
-                const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1000;
-                s.connect(f); f.connect(g); s.start();
-                o.start(); o.stop(ac.currentTime + 0.2);
+                for (let i = 0; i < 3; i++) {
+                    const delay = i * 0.03;
+                    const duration = 0.05 + Math.random() * 0.05;
+                    const n = ac.sampleRate * duration;
+                    const b = ac.createBuffer(1, n, ac.sampleRate);
+                    const d = b.getChannelData(0);
+                    for (let j = 0; j < n; j++) d[j] = (Math.random() * 2 - 1);
+
+                    const s = ac.createBufferSource();
+                    s.buffer = b;
+                    const f = ac.createBiquadFilter();
+                    f.type = 'highpass';
+                    f.frequency.value = 3000 + Math.random() * 2000;
+
+                    const ig = ac.createGain();
+                    ig.gain.setValueAtTime(0.15, ac.currentTime + delay);
+                    ig.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + delay + duration);
+
+                    s.connect(f);
+                    f.connect(ig);
+                    ig.connect(g);
+                    s.start(ac.currentTime + delay);
+                }
             } catch (e) { }
         }
         function sfxReveal() {
