@@ -1235,7 +1235,10 @@
 
         /* ─── AUDIO FX (Web Audio API synthesis) ─── */
         let ac = null;
-        function initAudio() { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); }
+        function initAudio() { 
+            if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (ac.state === 'suspended') ac.resume();
+        }
         function sfxHit() {
             try {
                 if (!ac) return;
@@ -1243,7 +1246,7 @@
                 o.type = 'triangle'; g.connect(ac.destination); o.connect(g);
                 o.frequency.setValueAtTime(400, ac.currentTime);
                 o.frequency.exponentialRampToValueAtTime(100, ac.currentTime + 0.1);
-                g.gain.setValueAtTime(0.3, ac.currentTime);
+                g.gain.setValueAtTime(0.5, ac.currentTime);
                 g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.1);
                 o.start(); o.stop(ac.currentTime + 0.1);
             } catch (e) { }
@@ -1270,7 +1273,7 @@
                     f.frequency.value = 3000 + Math.random() * 2000;
 
                     const ig = ac.createGain();
-                    ig.gain.setValueAtTime(0.15, ac.currentTime + delay);
+                    ig.gain.setValueAtTime(0.4, ac.currentTime + delay);
                     ig.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + delay + duration);
 
                     s.connect(f);
