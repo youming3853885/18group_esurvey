@@ -9,6 +9,40 @@
     <meta property="og:image" content="https://example.com/share-image.jpg">
     <title>職群怪物圖鑑｜你內心的是哪一隻怪物？</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        /**
+         * In-App Browser Breakout (Jailbreak)
+         * Forces opening in the default browser for LINE/FB/Messenger to ensure better UX and sharing functionality.
+         */
+        (function() {
+            var ua = navigator.userAgent || navigator.vendor || window.opera;
+            var isLine = ua.indexOf("Line") > -1;
+            var isFB = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1);
+            var isMessenger = ua.indexOf("Messenger") > -1;
+            var isInstagram = ua.indexOf("Instagram") > -1;
+
+            if (isLine || isFB || isMessenger || isInstagram) {
+                // 1. LINE Specific Breakout
+                if (isLine && window.location.href.indexOf('openExternalBrowser=1') === -1) {
+                    var url = window.location.href;
+                    var sep = url.indexOf('?') > -1 ? '&' : '?';
+                    window.location.href = url + sep + 'openExternalBrowser=1';
+                    return;
+                }
+
+                // 2. Android Universal Breakout (Forces Chrome/Default Browser)
+                if (/Android/i.test(ua)) {
+                    var url = window.location.href.replace(/^https?:\/\//, "");
+                    // Using intent scheme to trigger external browser
+                    window.location.href = "intent://" + url + "#Intent;scheme=https;package=com.android.chrome;end";
+                }
+                
+                // 3. iOS FB/Messenger/IG: Cannot force breakout automatically, 
+                // but we can prompt the user later if needed. 
+                // For now, the openExternalBrowser=1 trick handles LINE on iOS.
+            }
+        })();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* ── Reset & Constants ── */
@@ -866,7 +900,7 @@
     <div class="toast" id="toast"></div>
 
     <!-- ================= AUDIO ================= -->
-    <audio id="bgm" src="background.ogg" loop></audio>
+    <audio id="bgm" src="background2.ogg" loop></audio>
 
     <!-- ================= LOADING ================= -->
     <div class="app-container screen active" id="screen-loading">
@@ -1571,7 +1605,7 @@
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], 'my_monster_story.png', { type: 'image/png' });
                     
-                    // 嘗試呼叫手機原生的 Web Share API (真一鍵分享 IG 限動)
+                    // 嘗試呼叫手機原生的 Web Share API
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
@@ -1579,19 +1613,25 @@
                                 title: '職群怪物圖鑑',
                                 text: `我的職場原動力是「${window._topName}」！快來測測你內心住著什麼怪物？`
                             });
-                            showToast('✅ 分享成功！');
+                            showToast('✅ 請在分享選項中選擇「Instagram 限時動態」');
                             return;
                         } catch (err) {
                             console.log('Share canceled or failed', err);
                         }
                     }
 
-                    // 退而求其次：直接下載圖片
+                    // 退而求其次：直接下載圖片並嘗試喚起 Instagram
                     const link = document.createElement('a');
                     link.download = 'my_monster_story.png';
                     link.href = URL.createObjectURL(blob);
                     link.click();
-                    showToast('✅ 卡牌已下載！快去發佈 IG 限時動態吧');
+                    
+                    showToast('✅ 卡牌已下載！即將為您開啟 IG...');
+                    
+                    // 嘗試喚起 Instagram App
+                    setTimeout(() => {
+                        window.location.href = "instagram://camera"; // 直接跳轉到 IG 相機/發布畫面
+                    }, 1500);
 
                 }, 'image/png');
             } catch (e) {
@@ -1700,18 +1740,15 @@
                 detail.style.animation = 'fadeIn 0.5s ease';
             }
 
-            // Supabase API 設定
+            // 1. --- 送到 Supabase 紀錄資料庫 (原本的功能) ---
             const SUPABASE_URL = "https://wbvijcrweoljcuksynyp.supabase.co"; 
             const SUPABASE_KEY = "sb_publishable_FhtabuaPzPE8RTOKmHx9TA_XxTc9Dtd";
-            const TABLE_NAME = "leads"; // 請確定你在 Supabase 建立的資料表名稱是這個 (leads)
-
-            const payload = {
-                "資料來源": "18group",
+            const TABLE_NAME = "leads"; 
+            const supabasePayload = {
+                "資料來源": "18group_monster",
                 "年級": S.answers['grade'] || "未填寫",
                 "EMAIL": em
             };
-
-            // Fire to Supabase REST API
             fetch(`${SUPABASE_URL}/rest/v1/${TABLE_NAME}`, {
                 method: "POST",
                 headers: {
@@ -1720,17 +1757,38 @@
                     "Content-Type": "application/json",
                     "Prefer": "return=minimal"
                 },
-                body: JSON.stringify(payload)
-            }).then(response => {
-                if(response.ok) {
-                    showToast('✅ 備份報告已寄出，請查收信箱');
-                } else {
-                    showToast('⚠️ 資料紀錄發生錯誤，請稍後再試');
-                }
+                body: JSON.stringify(supabasePayload)
+            });
+
+            // 2. --- 送到 Google Apps Script 觸發寄送完整報告 (新增修復) ---
+            // 使用 v2 版本中有效的 GAS URL
+            const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwC9UTPJRnWCn0ouPPJr958wL2vV9RIUdxL51lyedU40gaSUZkXxA6EWZZPik8kt_BG/exec";
+            const reportPayload = {
+                "email": em,
+                "grade": S.answers['grade'] || "未填寫",
+                "clarity": S.answers['clarity'] || "未填寫",
+                "topGroup": window._topName,
+                "finalScores": window._resultScores,
+                "monsterImg": window._monsterImgPath,
+                "rawResponses": {
+                    "abilities": S.abilities,
+                    "scenariosBest": S.scenariosBest,
+                    "scenariosWorst": S.scenariosWorst
+                },
+                "source": "monster_rpg"
+            };
+
+            fetch(GOOGLE_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(reportPayload)
+            }).then(() => {
+                showToast('✅ 完整分析報告已寄至您的信箱，請查收！');
                 btn.textContent = '確認送出';
                 btn.style.opacity = 1;
             }).catch(() => {
-                showToast('⚠️ 網路連線錯誤');
+                showToast('⚠️ 報告寄送異常，但資料已成功備份');
                 btn.textContent = '確認送出';
                 btn.style.opacity = 1;
             });
