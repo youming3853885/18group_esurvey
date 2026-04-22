@@ -800,36 +800,44 @@
             margin-top: 40px;
         }
 
-        /* Email Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
             display: none;
             align-items: flex-end;
+            justify-content: center;
         }
 
         .modal-overlay.active {
             display: flex;
-            animation: fadeIn 0.3s ease;
         }
 
         .modal-content {
-            background: #18181b;
+            background: #1c1c1e;
             width: 100%;
-            padding: 2rem 1.5rem;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            padding-bottom: max(2rem, env(safe-area-inset-bottom));
+            max-width: 480px; /* Constrain to app width */
+            padding: 2.5rem 1.5rem;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding-bottom: max(3rem, env(safe-area-inset-bottom));
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
         }
 
         .modal-title {
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 900;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
             color: #fff;
+            text-align: left;
         }
 
         .modal-desc {
@@ -874,19 +882,38 @@
 
         .email-input {
             width: 100%;
-            background: #27272a;
-            border: 1px solid #3f3f46;
+            background: #2c2c2e;
+            border: 1px solid #3a3a3c;
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.2rem;
             color: #fff;
             font-size: 1rem;
             outline: none;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             font-family: inherit;
+            transition: all 0.2s;
         }
 
         .email-input:focus {
             border-color: #a855f7;
+            background: #3a3a3c;
+        }
+
+        .btn-email {
+            width: 100%;
+            padding: 1.2rem;
+            background: #a855f7;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .btn-email:active {
+            transform: scale(0.98);
         }
 
         .toast {
