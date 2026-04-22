@@ -1625,8 +1625,7 @@
                     return res;
                 };
                 const ni = norm(interest), na = norm(ability), nv = norm(values);
-
-                // Final Weight: 50% Interest, 30% Ability, 20% Values
+                window._ni = ni; window._na = na; // Save for email scope
                 const final = {};
                 GROUPS.forEach(g => {
                     final[g] = Math.round(ni[g] * 0.5 + na[g] * 0.3 + nv[g] * 0.2);
@@ -1717,8 +1716,8 @@
                                 return `
                                 <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
                                     <td style="padding:0.8rem 0;">${g}</td>
-                                    <td style="text-align:center;">${'★'.repeat(Math.ceil(intScore/20))}${'☆'.repeat(5-Math.ceil(intScore/20))}</td>
-                                    <td style="text-align:center;">${'★'.repeat(Math.ceil(ablScore/20))}${'☆'.repeat(5-Math.ceil(ablScore/20))}</td>
+                                    <td style="text-align:center;"><span style="color:#f59e0b;">${'★'.repeat(Math.ceil(intScore/20))}</span><span style="color:rgba(255,255,255,0.2);">${'★'.repeat(5-Math.ceil(intScore/20))}</span></td>
+                                    <td style="text-align:center;"><span style="color:#10b981;">${'★'.repeat(Math.ceil(ablScore/20))}</span><span style="color:rgba(255,255,255,0.2);">${'★'.repeat(5-Math.ceil(ablScore/20))}</span></td>
                                     <td style="text-align:right;"><span style="background:${adviceBg}; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${advice}</span></td>
                                 </tr>`;
                             }).join('')}
@@ -2049,8 +2048,8 @@
                 "topGroup": window._topName,
                 "riasec": window._riasec,
                 "finalScores": window._resultScores,
-                "interestScores": ni,
-                "abilityScores": na,
+                "interestScores": window._ni,
+                "abilityScores": window._na,
                 "monsterImg": window._monsterImgPath,
                 "rawResponses": {
                     "abilities": S.abilities,
