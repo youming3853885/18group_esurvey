@@ -1318,19 +1318,21 @@
                     x += vx;
                     y += vy;
                     vy += gravity;
-                    life -= decay;
+                    // Slower decay so they reach the bottom
+                    life -= (decay * 0.7);
 
-                    // Sparkling twinkle effect
                     const twinkle = 0.7 + Math.random() * 0.3;
-                    p.style.transform = `translate(${x - cx}px, ${y - cy}px) scale(${life})`;
-                    p.style.opacity = life * twinkle;
+                    // Ensure scale doesn't go negative
+                    const currentScale = Math.max(0.2, life);
+                    p.style.transform = `translate(${x - cx}px, ${y - cy}px) scale(${currentScale})`;
+                    p.style.opacity = Math.max(0, life * twinkle);
                     
-                    // Extra glow when "young"
                     if (life > 0.7) {
                         p.style.boxShadow = `0 0 ${15 * life}px #fff, 0 0 ${25 * life}px #a855f7`;
                     }
 
-                    if (life > 0) {
+                    // Remove only when off-screen at bottom or life is completely gone
+                    if (y < window.innerHeight + 100 && life > -0.1) {
                         requestAnimationFrame(animate);
                     } else {
                         p.remove();
