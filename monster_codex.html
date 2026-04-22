@@ -4,8 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:title" content="我是稀有度 SSR 的怪物！快來測測你的職場原動力！">
+    <meta property="og:description" content="全台僅 5% 的人擁有此特質！探索你的潛在天賦。">
+    <meta property="og:image" content="https://example.com/share-image.jpg">
     <title>職群怪物圖鑑｜你內心的是哪一隻怪物？</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* ── Reset & Constants ── */
         * {
@@ -58,10 +62,35 @@
             width: 100%;
             height: 100%;
             animation: fadeIn 0.4s ease;
+            background: #000;
         }
 
         .screen.active {
             display: flex;
+        }
+
+        #screen-loading {
+            justify-content: center;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: radial-gradient(circle at 50% 50%, #2e1065 0%, #050508 100%);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top: 5px solid #a855f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes fadeIn {
@@ -92,7 +121,7 @@
         #screen-home {
             justify-content: flex-start;
             background: #000;
-            padding: 1.5rem 0;
+            padding: 0 0 1.5rem 0;
         }
 
         .hero-img {
@@ -100,6 +129,7 @@
             flex: 1;
             min-height: 0;
             object-fit: contain;
+            object-position: top;
             opacity: 0.9;
         }
 
@@ -347,6 +377,12 @@
             pointer-events: none;
         }
 
+        .opt-btn.scenario-opt {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
         .scenario-badge {
             width: 28px;
             height: 28px;
@@ -378,6 +414,7 @@
             background: #000;
             justify-content: flex-start;
             padding-bottom: 3rem;
+            overflow-y: auto;
         }
 
         .monster-img-wrap {
@@ -385,6 +422,7 @@
             padding: 1.5rem;
             display: flex;
             justify-content: center;
+            position: relative;
         }
 
         .monster-img {
@@ -400,6 +438,148 @@
             display: flex;
             flex-direction: column;
             padding: 0 1.5rem;
+            width: 100%;
+        }
+
+        /* A1: Curiosity Gap */
+        .curiosity-gap {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .curiosity-gap h3 {
+            font-size: 1.1rem;
+            color: #c084fc;
+            margin-bottom: 0.5rem;
+        }
+
+        .curiosity-gap p.teaser {
+            font-size: 0.95rem;
+            color: #e2e8f0;
+        }
+
+        .curiosity-gap p.blurred {
+            filter: blur(5px);
+            user-select: none;
+            color: #a1a1aa;
+            margin-top: 0.5rem;
+        }
+
+        .unlock-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 1rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 20%, transparent 100%);
+        }
+
+        .btn-unlock-small {
+            background: #a855f7;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* A3: Top 3 Thumbnails */
+        .top3-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .thumbnail-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .thumbnail-wrap:hover {
+            transform: translateY(-5px);
+        }
+
+        .thumbnail-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #a855f7;
+            object-fit: cover;
+            margin-bottom: 0.4rem;
+            background: #000;
+        }
+
+        .thumbnail-label {
+            font-size: 0.75rem;
+            color: #a1a1aa;
+            font-weight: bold;
+        }
+
+        /* Full Card Popup */
+        .card-popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .card-popup.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .card-popup-content {
+            position: relative;
+            transform: scale(0.8) rotateY(90deg);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-popup.active .card-popup-content {
+            transform: scale(1) rotateY(0deg);
+        }
+
+        .card-popup img {
+            width: 80vw;
+            max-width: 320px;
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+        }
+
+        .close-popup {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #fff;
+            color: #000;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
         }
 
         .result-actions {
@@ -411,7 +591,9 @@
         }
 
         .btn-share,
-        .btn-email {
+        .btn-email,
+        .btn-line,
+        .btn-google {
             width: 100%;
             padding: 1.1rem;
             border-radius: 14px;
@@ -436,9 +618,136 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
         }
 
+        .btn-ig {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 900;
+            font-size: 0.95rem;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            padding: 1rem 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .btn-ig:active, .btn-fb:active {
+            transform: scale(0.95);
+        }
+
+        .btn-fb {
+            background: #1877F2;
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 900;
+            font-size: 0.95rem;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            padding: 1rem 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .share-actions {
+            display: flex;
+            flex-direction: row;
+            gap: 0.8rem;
+            width: 100%;
+        }
+
+        .share-actions button {
+            flex: 1;
+        }
+
+
+        .btn-line {
+            background: #06C755;
+            color: white;
+            border: none;
+        }
+
+        .btn-google {
+            background: #fff;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
         .btn-share:active,
-        .btn-email:active {
+        .btn-email:active,
+        .btn-line:active,
+        .btn-google:active {
             transform: scale(0.97);
+        }
+
+        /* B1: Hidden IG Story Template */
+        #ig-template {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 1080px;
+            height: 1920px;
+            background: #050508;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px;
+            font-family: 'Noto Sans TC', sans-serif;
+            text-align: center;
+        }
+
+        .ig-title {
+            font-size: 70px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: #c084fc;
+        }
+
+        .ig-rarity {
+            font-size: 40px;
+            color: #f59e0b;
+            margin-bottom: 80px;
+            font-weight: bold;
+        }
+
+        .ig-img {
+            width: 800px;
+            height: 800px;
+            object-fit: contain;
+            border-radius: 40px;
+            box-shadow: 0 0 100px rgba(168, 85, 247, 0.5);
+            margin-bottom: 80px;
+        }
+
+        .ig-desc {
+            font-size: 50px;
+            font-weight: bold;
+            color: #e2e8f0;
+            margin-bottom: 60px;
+            line-height: 1.5;
+        }
+
+        .ig-sticker-space {
+            width: 800px;
+            height: 300px;
+            border: 4px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         /* Email Modal */
@@ -478,6 +787,39 @@
             color: #a1a1aa;
             margin-bottom: 1.5rem;
             line-height: 1.5;
+        }
+
+        .login-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .divider {
+            text-align: center;
+            color: #71717a;
+            font-size: 0.8rem;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #3f3f46;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
         }
 
         .email-input {
@@ -524,14 +866,19 @@
     <div class="toast" id="toast"></div>
 
     <!-- ================= AUDIO ================= -->
-    <audio id="bgm" src="background.mp3" loop></audio>
+    <audio id="bgm" src="background.ogg" loop></audio>
+
+    <!-- ================= LOADING ================= -->
+    <div class="app-container screen active" id="screen-loading">
+        <div class="loading-spinner"></div>
+        <div>載入中...</div>
+    </div>
 
     <!-- ================= INTRO ================= -->
-    <div class="app-container screen active" id="screen-home">
+    <div class="app-container screen" id="screen-home">
         <img src="pic/hero.webp" class="hero-img" alt="Hero">
         <button class="hero-cta" onclick="startGame()">覺醒內在怪物!!</button>
     </div>
-
     <!-- ================= GAME LOOP ================= -->
     <div class="app-container screen" id="screen-game">
         <!-- Header -->
@@ -545,7 +892,7 @@
         <!-- Egg Render -->
         <div class="egg-area" id="eggArea">
             <div class="egg-container" id="eggContainer">
-                <img src="egg.png" class="egg-img" id="eggImg">
+                <img src="eye.webp" class="egg-img" id="eggImg">
                 <svg class="egg-svg-cracks" viewBox="0 0 200 200" id="eggCracks">
                     <!-- Cracks will be generated here -->
                 </svg>
@@ -566,11 +913,45 @@
             <img src="" id="resMonsterImg" class="monster-img">
         </div>
         <div class="result-ui">
-            <div class="result-actions">
-                <!-- Native share if supported, or instruction to take screenshot -->
-                <button class="btn-share" onclick="shareIG()">發布到 IG / 儲存圖片</button>
-                <button class="btn-email" onclick="openEmail()">📨 寄送詳細能力落差分析給你</button>
+            <!-- A1: Curiosity Gap -->
+            <div class="curiosity-gap" id="curiosityGap">
+                <div id="gapTeaser">
+                    <h3>你的隱藏天賦極其罕見！</h3>
+                    <p class="teaser">你具備強大的潛力，但職場上最大的死穴其實是...</p>
+                    <p class="blurred">▇▇▇▇▇，這會讓你錯失良機。</p>
+                    <div class="unlock-overlay" id="unlockOverlay">
+                        <button class="btn-unlock-small" onclick="openEmail()">解鎖深度分析</button>
+                    </div>
+                </div>
+                <div id="detailedAnalysisContainer" style="display: none;"></div>
             </div>
+
+            <!-- A3: Top 3 Thumbnails -->
+            <div
+                style="text-align: center; color: #a1a1aa; font-size: 0.85rem; margin-bottom: 0.5rem; font-weight: bold;">
+                三大潛能職群</div>
+            <div class="top3-container" id="top3Container">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="result-actions share-actions">
+                <button class="btn-ig" onclick="shareToIG()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm3.98-10.88a1.44 1.44 0 100 2.88 1.44 1.44 0 000-2.88z"/></svg>
+                    發 IG 限動
+                </button>
+                <button class="btn-fb" onclick="shareToFB()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    分享到 FB
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Popup -->
+    <div class="card-popup" id="cardPopup" onclick="if(event.target===this)this.classList.remove('active')">
+        <div class="card-popup-content">
+            <div class="close-popup" onclick="document.getElementById('cardPopup').classList.remove('active')">×</div>
+            <img src="" id="popupImg">
         </div>
     </div>
 
@@ -578,10 +959,20 @@
     <div class="modal-overlay" id="emailModal" onclick="if(event.target===this)this.classList.remove('active')">
         <div class="modal-content">
             <div class="modal-title">解鎖專屬深度分析報告</div>
-            <div class="modal-desc">包含完整的 RIASEC 六型人格輪廓、適合科系能力差距分析與行動計畫。留下信箱，我們寄信給你備份收藏。</div>
+            <div class="modal-desc">包含完整的六型人格輪廓與行動計畫。</div>
+
             <input type="email" class="email-input" id="emailInput" placeholder="輸入你的 Email">
             <button class="btn-email" id="btnSendEmail" onclick="submitEmail()">確認送出</button>
         </div>
+    </div>
+
+    <!-- B1: Hidden Template for html2canvas -->
+    <div id="ig-template">
+        <div class="ig-title" id="igTitle">我是SSR級的時鐘怪客！</div>
+        <div class="ig-rarity">全台僅 5% 的人擁有此特質</div>
+        <img src="" id="igImg" class="ig-img">
+        <div class="ig-desc">我的職場天敵是誰？<br>你也來測測你的職場原動力！</div>
+        <div class="ig-sticker-space">將圖片分享到限動，並在此放上【票選貼紙】</div>
     </div>
 
 
@@ -618,6 +1009,48 @@
             impact: { groups: ['法政學群', '社會與心理學群', '管理學群', '大眾傳播學群'] }
         };
 
+        const CAREER_MAP = {
+            '資訊學群': '軟體工程師、AI科學家、資安專家（趨勢：人工智慧、大數據）',
+            '大眾傳播學群': '社群小編、影音創作者、新聞記者（趨勢：自媒體、數位行銷）',
+            '藝術學群': '視覺設計師、動畫師、策展人（趨勢：數位藝術、UI/UX）',
+            '文史哲學群': '文案企劃、編輯、文化行政（趨勢：內容行銷、IP改編）',
+            '建築與設計學群': '建築師、室內設計師、產品設計師（趨勢：綠建築、智慧住宅）',
+            '財經學群': '精算師、會計師、金融分析師（趨勢：FinTech、區塊鏈）',
+            '地球與環境學群': '環境工程師、地質調查員、氣象預報員（趨勢：ESG永續、淨零碳排）',
+            '教育學群': '中學教師、企業培訓師、教育科技研發（趨勢：線上教學、STEAM教育）',
+            '工程學群': '半導體工程師、機械工程師、電機技師（趨勢：電動車、自動化）',
+            '社會與心理學群': '諮商心理師、社工師、人資專員（趨勢：高齡照護、心理健康）',
+            '醫藥衛教學群': '醫師、藥師、護理師、物理治療師（趨勢：精準醫療、長照）',
+            '遊憩與運動學群': '運動防護員、健身教練、觀光企劃（趨勢：運動科學、體驗經濟）',
+            '法政學群': '律師、司法官、公務員、民代助理（趨勢：智財權、數位法規）',
+            '管理學群': '專案經理、行銷經理、創業家（趨勢：數位轉型、電子商務）',
+            '生物資源學群': '獸醫師、農業技師、森林保育員（趨勢：智慧農業、食品安全）',
+            '生命科學學群': '生技研發人員、疫苗研究員（趨勢：基因編輯、細胞治療）',
+            '外語學群': '口譯員、外交官、國際業務（趨勢：跨國電商、在地化翻譯）',
+            '數理化學學群': '數據科學家、材料研發人員、統計學家（趨勢：半導體材料、演算法）'
+        };
+
+        const SUBJECT_WEIGHTS = {
+            "資訊學群": { "國": 53, "英": 80, "數A": 83, "數B": 23, "社": 3, "自": 50 },
+            "大眾傳播學群": { "國": 93, "英": 67, "數A": 4, "數B": 11, "社": 44, "自": 2 },
+            "藝術學群": { "國": 96, "英": 70, "數A": 1, "數B": 4, "社": 22, "自": 0 },
+            "文史哲學群": { "國": 96, "英": 64, "數A": 5, "數B": 22, "社": 89, "自": 0 },
+            "建築與設計學群": { "國": 95, "英": 64, "數A": 16, "數B": 13, "社": 35, "自": 8 },
+            "財經學群": { "國": 86, "英": 75, "數A": 28, "數B": 50, "社": 40, "自": 1 },
+            "地球與環境學群": { "國": 76, "英": 79, "數A": 76, "數B": 13, "社": 18, "自": 79 },
+            "教育學群": { "國": 98, "英": 82, "數A": 12, "數B": 51, "社": 46, "自": 2 },
+            "工程學群": { "國": 61, "英": 82, "數A": 94, "數B": 8, "社": 1, "自": 73 },
+            "社會與心理學群": { "國": 89, "英": 65, "數A": 18, "數B": 31, "社": 60, "自": 9 },
+            "醫藥衛教學群": { "國": 74, "英": 91, "數A": 54, "數B": 6, "社": 4, "自": 83 },
+            "遊憩與運動學群": { "國": 90, "英": 63, "數A": 8, "數B": 25, "社": 40, "自": 8 },
+            "法政學群": { "國": 91, "英": 76, "數A": 18, "數B": 40, "社": 87, "自": 0 },
+            "管理學群": { "國": 83, "英": 78, "數A": 26, "數B": 42, "社": 34, "自": 9 },
+            "生物資源學群": { "國": 82, "英": 89, "數A": 53, "數B": 21, "社": 0, "自": 95 },
+            "生命科學學群": { "國": 55, "英": 92, "數A": 50, "數B": 3, "社": 0, "自": 95 },
+            "外語學群": { "國": 92, "英": 88, "數A": 3, "數B": 13, "社": 60, "自": 0 },
+            "數理化學學群": { "國": 45, "英": 81, "數A": 91, "數B": 2, "社": 0, "自": 79 }
+        };
+
         // 24 Abilities
         const RAW_ABILITIES = [
             { id: 'logic', l: '邏輯分析', d: '解題時能找到規律', g: ['數理化學學群', '資訊學群', '工程學群', '法政學群'] },
@@ -626,24 +1059,24 @@
             { id: 'math', l: '數字直覺', d: '面對數字統計，能快速找規律', g: ['數理化學學群', '財經學群', '資訊學群', '工程學群'] },
             { id: 'empathy', l: '同理傾聽', d: '朋友常找你談心，能幫他梳理情緒', g: ['社會與心理學群', '教育學群', '醫藥衛教學群'] },
             { id: 'hands', l: '動手實作', d: '喜歡動手修理組裝，通常能成功', g: ['工程學群', '生物資源學群', '遊憩與運動學群'] },
-            { id: 'memory', l: '記憶背誦', d: '大量資料（單字、年表）難不倒你', g: ['醫藥衛教學群', '外語學群', '法政學群', '文史哲學群'] },
+            { id: 'memory', l: '記憶背誦', d: '大量資料（英文單字、歷史年表）難不倒你', g: ['醫藥衛教學群', '外語學群', '法政學群', '文史哲學群'] },
             { id: 'aesthetic', l: '美感審美', d: '看到設計排版，能馬上感覺美不美', g: ['藝術學群', '建築與設計學群', '大眾傳播學群'] },
-            { id: 'nature', l: '生態觀察', d: '對動植物生態環境很敏感', g: ['生命科學學群', '生物資源學群', '地球與環境學群'] },
-            { id: 'organize', l: '組織規劃', d: '活動任務習慣先想好流程備案', g: ['管理學群', '法政學群', '教育學群', '財經學群'] },
+            { id: 'nature', l: '生態觀察', d: '對動植物、生態環境很敏感、喜歡觀察', g: ['生命科學學群', '生物資源學群', '地球與環境學群'] },
+            { id: 'organize', l: '組織規劃', d: '活動或任務，我習慣先想好流程與備案', g: ['管理學群', '法政學群', '教育學群', '財經學群'] },
             { id: 'critical', l: '批判思考', d: '看到論點，習慣質疑「有什麼漏洞？」', g: ['法政學群', '數理化學學群', '社會與心理學群'] },
-            { id: 'language', l: '語言直覺', d: '學語言時語感抓得較快', g: ['外語學群', '大眾傳播學群', '文史哲學群'] },
-            { id: 'leadership', l: '領導統御', d: '小組討論時通常是分配工作的人', g: ['管理學群', '法政學群', '教育學群', '大眾傳播學群'] },
-            { id: 'commercial', l: '商業洞察', d: '看到生意會直覺算怎麼賺錢', g: ['財經學群', '管理學群', '資訊學群'] },
-            { id: 'data_sense', l: '數據解析', d: '看圖表資料能一眼抓到趨勢', g: ['數理化學學群', '財經學群', '資訊學群', '地球與環境學群'] },
-            { id: 'machinery', l: '機械靈感', d: '複雜機器介面隨便摸就知道怎麼操作', g: ['工程學群', '遊憩與運動學群', '生物資源學群'] },
+            { id: 'language', l: '語言直覺', d: '學習新語言時，語感抓得比一般人快', g: ['外語學群', '大眾傳播學群', '文史哲學群'] },
+            { id: 'leadership', l: '領導統御', d: '小組討論時，我通常是那個分配工作、定方向的人', g: ['管理學群', '法政學群', '教育學群', '大眾傳播學群'] },
+            { id: 'commercial', l: '商業洞察', d: '看到一門生意，我會直覺去算它怎麼賺錢、成本多少', g: ['財經學群', '管理學群', '資訊學群'] },
+            { id: 'data_sense', l: '數據解析', d: '看圖表或大量資料時，我能一眼抓到重點趨勢', g: ['數理化學學群', '財經學群', '資訊學群', '地球與環境學群'] },
+            { id: 'machinery', l: '機械靈感', d: '我不怕複雜的機器介面，隨便摸一摸就知道怎麼操作', g: ['工程學群', '遊憩與運動學群', '生物資源學群'] },
             { id: 'coding', l: '演算法思維', d: '做事喜歡先定好規則和步驟', g: ['資訊學群', '數理化學學群', '工程學群'] },
-            { id: 'visual', l: '影像直覺', d: '對畫面色彩搭配有一套標準堅持', g: ['藝術學群', '建築與設計學群', '大眾傳播學群'] },
-            { id: 'history', l: '脈絡推敲', d: '對事件的前因後果記憶力特好', g: ['文史哲學群', '法政學群', '社會與心理學群'] },
-            { id: 'teaching', l: '教學轉譯', d: '教人功課時能換方式讓他聽懂', g: ['教育學群', '社會與心理學群', '醫藥衛教學群'] },
-            { id: 'plants', l: '戶外耐受', d: '比冷氣房更喜歡戶外自然環境', g: ['生物資源學群', '地球與環境學群', '遊憩與運動學群'] },
-            { id: 'medical', l: '生命科學', d: '讀到人體構造疾病原理覺得有趣', g: ['醫藥衛教學群', '生命科學學群', '生物資源學群'] },
-            { id: 'negotiate', l: '說服交涉', d: '遇不合理規定能找到論點去說服', g: ['法政學群', '管理學群', '大眾傳播學群'] },
-            { id: 'patience', l: '細節耐心', d: '反覆確認對齊格式不容易出錯', g: ['外語學群', '財經學群', '工程學群'] }
+            { id: 'visual', l: '影像直覺', d: '對畫面排版、色彩搭配，我有一套自己的標準和堅持', g: ['藝術學群', '建築與設計學群', '大眾傳播學群'] },
+            { id: 'history', l: '脈絡推敲', d: '對於事件發生的「前因後果」歷史脈絡，我記憶力特別好', g: ['文史哲學群', '法政學群', '社會與心理學群'] },
+            { id: 'teaching', l: '教學轉譯', d: '教別人功課時，我也能換個簡單的方式讓他聽懂', g: ['教育學群', '社會與心理學群', '醫藥衛教學群'] },
+            { id: 'plants', l: '戶外耐受', d: '相比一直待在冷氣房，我在大自然或戶外雖然熱但更自在', g: ['生物資源學群', '地球與環境學群', '遊憩與運動學群'] },
+            { id: 'medical', l: '生命科學', d: '讀到人體構造、疾病、或者細胞原理時，我會覺得很有趣', g: ['醫藥衛教學群', '生命科學學群', '生物資源學群'] },
+            { id: 'negotiate', l: '說服交涉', d: '如果遇到不合理的規定，我能找到論點去說服大人改變', g: ['法政學群', '管理學群', '大眾傳播學群'] },
+            { id: 'patience', l: '細節耐心', d: '需要反覆確認、對齊格式這種枯燥的細節，我不會容易出錯', g: ['外語學群', '財經學群', '工程學群'] }
         ];
 
         // 20 Scenarios
@@ -1061,11 +1494,64 @@
                     final[g] = Math.round(ni[g] * 0.5 + na[g] * 0.3 + nv[g] * 0.2);
                 });
 
-                // Find Top 1
-                const top1 = Object.entries(final).sort((a, b) => b[1] - a[1])[0][0];
+                // Find Top 3
+                const sortedGroups = Object.entries(final).sort((a, b) => b[1] - a[1]);
+                const top1 = sortedGroups[0][0];
+                const top2 = sortedGroups[1][0];
+                const top3 = sortedGroups[2][0];
+
                 window._resultScores = final;
                 window._topName = top1;
                 window._monsterImgPath = MONSTERS[top1] || MONSTERS['資訊學群'];
+
+                // Setup IG Template
+                document.getElementById('igTitle').textContent = `我是SSR級的${top1.replace('學群', '')}！`;
+                document.getElementById('igImg').src = window._monsterImgPath;
+
+                // Setup Detailed Analysis HTML
+                let analysisHtml = `<h3 style="color:#c084fc; font-size:1.2rem; margin-bottom:1rem;">專屬能力分析與職涯路徑</h3>`;
+                const career = CAREER_MAP[top1];
+                if (career) {
+                    analysisHtml += `<div style="background:rgba(255,255,255,0.1); padding:1rem; border-radius:12px; margin-bottom:1rem; text-align:left;">
+                        <div style="font-weight:bold; color:#fff; margin-bottom:0.3rem;">💼 未來職涯路徑</div>
+                        <div style="color:#e2e8f0; font-size:0.9rem;">${career}</div>
+                    </div>`;
+                }
+                const w = SUBJECT_WEIGHTS[top1];
+                if (w) {
+                    analysisHtml += `<div style="background:rgba(255,255,255,0.1); padding:1rem; border-radius:12px; margin-bottom:0.5rem; text-align:left;">
+                        <div style="font-weight:bold; color:#fff; margin-bottom:0.5rem;">📚 推薦學群參採科目比重參考</div>
+                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:0.3rem; margin-bottom:0.5rem; font-size:0.8rem; color:#a1a1aa;">
+                            <span>科目</span><span>參採率</span>
+                        </div>
+                        ${Object.keys(w).map(sub => `
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.3rem; font-size:0.9rem; ${w[sub] > 50 ? 'color:#f87171; font-weight:bold;' : 'color:#e2e8f0;'}">
+                                <span>${sub}</span><span>${w[sub]}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="font-size:0.75rem; color:#a1a1aa; text-align:left;">*參採率：代表該學群下有多少比例的科系會看這個科目的成績。</div>`;
+                }
+                document.getElementById('detailedAnalysisContainer').innerHTML = analysisHtml;
+
+                // Setup Top 3 Thumbnails
+                const tBox = document.getElementById('top3Container');
+                tBox.innerHTML = '';
+                [top1, top2, top3].forEach((g, i) => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'thumbnail-wrap';
+                    const imgPath = MONSTERS[g] || MONSTERS['資訊學群'];
+                    wrap.innerHTML = `
+                        <img src="${imgPath}" class="thumbnail-img">
+                        <div class="thumbnail-label">TOP ${i + 1}</div>
+                    `;
+                    wrap.onclick = () => {
+                        sfxHit();
+                        document.getElementById('popupImg').src = imgPath;
+                        document.getElementById('cardPopup').classList.add('active');
+                    };
+                    tBox.appendChild(wrap);
+                });
 
                 // Show Result
                 document.getElementById('resMonsterImg').src = window._monsterImgPath;
@@ -1076,20 +1562,58 @@
         }
 
         /* ─── RESULT ACTIONS ─── */
-        function shareIG() {
+        async function shareToIG() {
             sfxHit();
-            // Use Web Share API if mobile
-            if (navigator.share) {
-                navigator.share({
-                    title: '職群怪物圖鑑',
-                    text: `我覺醒的變異體質是「${window._topName}」，推薦你也來測測看！`,
-                    url: window.location.href // Change to your public URL if available
-                }).catch(e => {
-                    showToast('截圖分享到 IG 吧！');
-                });
-            } else {
-                showToast('請使用手機長按圖片儲存，再發布到 IG ！');
+            showToast('⏳ 正在準備專屬卡牌...');
+            try {
+                const el = document.getElementById('ig-template');
+                const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#050508', useCORS: true });
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], 'my_monster_story.png', { type: 'image/png' });
+                    
+                    // 嘗試呼叫手機原生的 Web Share API (真一鍵分享 IG 限動)
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: '職群怪物圖鑑',
+                                text: `我的職場原動力是「${window._topName}」！快來測測你內心住著什麼怪物？`
+                            });
+                            showToast('✅ 分享成功！');
+                            return;
+                        } catch (err) {
+                            console.log('Share canceled or failed', err);
+                        }
+                    }
+
+                    // 退而求其次：直接下載圖片
+                    const link = document.createElement('a');
+                    link.download = 'my_monster_story.png';
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    showToast('✅ 卡牌已下載！快去發佈 IG 限時動態吧');
+
+                }, 'image/png');
+            } catch (e) {
+                showToast('❌ 生成失敗，請直接截圖分享');
             }
+        }
+
+        function shareToFB() {
+            sfxHit();
+            const shareUrl = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
+        }
+
+        function fakeLogin(provider) {
+            sfxHit();
+            showToast(`✅ 已透過 ${provider} 授權，解鎖成功！`);
+            document.getElementById('emailModal').classList.remove('active');
+
+            // Reveal Detailed Analysis
+            document.getElementById('gapTeaser').style.display = 'none';
+            document.getElementById('detailedAnalysisContainer').style.display = 'block';
+            document.getElementById('detailedAnalysisContainer').style.animation = 'fadeIn 0.5s ease';
         }
 
         function openEmail() {
@@ -1097,10 +1621,68 @@
             document.getElementById('emailModal').classList.add('active');
         }
 
+        // Init Loading Screen & Preloader
+        window.addEventListener('DOMContentLoaded', () => {
+            const loadingText = document.querySelector('#screen-loading div:last-child');
+
+            const resources = [
+                'pic/hero.webp',
+                'eye.webp',
+                'background.ogg'
+            ];
+
+            // Add all monster images to preloader
+            Object.values(MONSTERS).forEach(src => resources.push(src));
+
+            let loadedCount = 0;
+            let totalResources = resources.length;
+
+            const checkDone = () => {
+                loadedCount++;
+                if (loadingText) {
+                    loadingText.textContent = `資源載入中... ${Math.floor((loadedCount / totalResources) * 100)}%`;
+                }
+
+                if (loadedCount >= totalResources) {
+                    // Small delay so user sees 100%
+                    setTimeout(() => {
+                        const loadingScreen = document.getElementById('screen-loading');
+                        if (loadingScreen) loadingScreen.classList.remove('active');
+                        document.getElementById('screen-home').classList.add('active');
+                    }, 300);
+                }
+            };
+
+            resources.forEach(src => {
+                if (src.endsWith('.ogg') || src.endsWith('.mp3')) {
+                    const audio = new Audio();
+                    audio.addEventListener('canplaythrough', checkDone, { once: true });
+                    audio.addEventListener('error', checkDone, { once: true });
+                    audio.src = src;
+                    audio.load();
+                } else {
+                    const img = new Image();
+                    img.onload = checkDone;
+                    img.onerror = checkDone;
+                    img.src = src;
+                }
+            });
+
+            // Fallback timeout just in case any event fails to fire (8 seconds max wait)
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('screen-loading');
+                if (loadingScreen && loadingScreen.classList.contains('active')) {
+                    loadingScreen.classList.remove('active');
+                    document.getElementById('screen-home').classList.add('active');
+                }
+            }, 8000);
+        });
+
         function submitEmail() {
             const em = document.getElementById('emailInput').value.trim();
-            if (!em || !em.includes('@')) {
-                showToast('⚠️ 請輸入正確的信箱');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!em || !emailRegex.test(em)) {
+                showToast('⚠️ 請輸入有效的 Email 格式 (例如: yourname@gmail.com)');
                 return;
             }
             sfxHit();
@@ -1108,22 +1690,47 @@
             btn.textContent = '寄送中...';
             btn.style.opacity = 0.5;
 
-            // Fire to GAS
-            fetch("https://script.google.com/macros/s/AKfycbwC9UTPJRnWCn0ouPPJr958wL2vV9RIUdxL51lyedU40gaSUZkXxA6EWZZPik8kt_BG/exec", {
-                method: "POST", mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: em, topGroup: window._topName, scores: window._resultScores,
-                    raw: S
-                })
-            }).then(() => {
-                showToast('✅ 備份報告已寄出，請查收信箱');
-                document.getElementById('emailModal').classList.remove('active');
+            // Reveal Detailed Analysis immediately for UX
+            document.getElementById('emailModal').classList.remove('active');
+            const teaser = document.getElementById('gapTeaser');
+            if(teaser) teaser.style.display = 'none';
+            const detail = document.getElementById('detailedAnalysisContainer');
+            if(detail) {
+                detail.style.display = 'block';
+                detail.style.animation = 'fadeIn 0.5s ease';
+            }
+
+            // Supabase API 設定
+            const SUPABASE_URL = "https://wbvijcrweoljcuksynyp.supabase.co"; 
+            const SUPABASE_KEY = "sb_publishable_FhtabuaPzPE8RTOKmHx9TA_XxTc9Dtd";
+            const TABLE_NAME = "leads"; // 請確定你在 Supabase 建立的資料表名稱是這個 (leads)
+
+            const payload = {
+                "資料來源": "18group",
+                "年級": S.answers['grade'] || "未填寫",
+                "EMAIL": em
+            };
+
+            // Fire to Supabase REST API
+            fetch(`${SUPABASE_URL}/rest/v1/${TABLE_NAME}`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                body: JSON.stringify(payload)
+            }).then(response => {
+                if(response.ok) {
+                    showToast('✅ 備份報告已寄出，請查收信箱');
+                } else {
+                    showToast('⚠️ 資料紀錄發生錯誤，請稍後再試');
+                }
                 btn.textContent = '確認送出';
                 btn.style.opacity = 1;
             }).catch(() => {
-                showToast('✅ 已成功記錄寄送請求');
-                document.getElementById('emailModal').classList.remove('active');
+                showToast('⚠️ 網路連線錯誤');
                 btn.textContent = '確認送出';
                 btn.style.opacity = 1;
             });
