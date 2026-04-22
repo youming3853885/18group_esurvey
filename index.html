@@ -1636,6 +1636,7 @@
                 const top1 = sortedGroups[0][0];
                 const top2 = sortedGroups[1][0];
                 const top3 = sortedGroups[2][0];
+                window._top1 = top1; window._top2 = top2; window._top3 = top3; // Save for email scope
 
                 // --- RIASEC Calculation ---
                 const riasecMap = {
@@ -2052,14 +2053,14 @@
                 "abilityScores": window._na,
                 "monsterImg": window._monsterImgPath,
                 "careerPath": {
-                    [top1]: CAREER_MAP[top1],
-                    [top2]: CAREER_MAP[top2],
-                    [top3]: CAREER_MAP[top3]
+                    [window._top1]: CAREER_MAP[window._top1],
+                    [window._top2]: CAREER_MAP[window._top2],
+                    [window._top3]: CAREER_MAP[window._top3]
                 },
                 "subjectWeights": {
-                    [top1]: SUBJECT_WEIGHTS[top1],
-                    [top2]: SUBJECT_WEIGHTS[top2],
-                    [top3]: SUBJECT_WEIGHTS[top3]
+                    [window._top1]: SUBJECT_WEIGHTS[window._top1],
+                    [window._top2]: SUBJECT_WEIGHTS[window._top2],
+                    [window._top3]: SUBJECT_WEIGHTS[window._top3]
                 },
                 "rawResponses": {
                     "abilities": S.abilities,
