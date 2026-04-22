@@ -1236,26 +1236,25 @@
         /* ─── AUDIO FX (Web Audio API synthesis) ─── */
         let ac = null;
         function initAudio() { 
-            try {
-                if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); 
-                if (ac.state === 'suspended') ac.resume();
-                console.log("Audio Context State:", ac.state);
-            } catch(e) { console.error("Audio Init Error:", e); }
+            if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); 
+            if (ac.state === 'suspended') ac.resume();
         }
         function sfxHit() {
             try {
+                initAudio();
                 if (!ac) return;
                 const o = ac.createOscillator(), g = ac.createGain();
-                o.type = 'triangle'; g.connect(ac.destination); o.connect(g);
-                o.frequency.setValueAtTime(400, ac.currentTime);
-                o.frequency.exponentialRampToValueAtTime(100, ac.currentTime + 0.1);
-                g.gain.setValueAtTime(0.5, ac.currentTime);
+                o.type = 'square'; g.connect(ac.destination); o.connect(g);
+                o.frequency.setValueAtTime(300, ac.currentTime);
+                o.frequency.exponentialRampToValueAtTime(80, ac.currentTime + 0.1);
+                g.gain.setValueAtTime(0.6, ac.currentTime);
                 g.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.1);
                 o.start(); o.stop(ac.currentTime + 0.1);
             } catch (e) { }
         }
         function sfxCrack() {
             try {
+                initAudio();
                 if (!ac) return;
                 // High-frequency "crunch" sound using filtered noise
                 const g = ac.createGain();
@@ -1407,11 +1406,7 @@
         /* ─── CORE LOOP LOGIC ─── */
         function startGame() {
             initAudio();
-            const bgm = document.getElementById('bgm');
-            if (bgm) {
-                bgm.volume = 0.6;
-                bgm.play().catch(err => console.log("BGM Play Error:", err));
-            }
+            try { document.getElementById('bgm').play(); } catch (e) { }
             document.getElementById('screen-home').classList.remove('active');
             document.getElementById('screen-game').classList.add('active');
             buildEggCracks();
