@@ -59,9 +59,9 @@
             background: #050508;
             color: #e2e8f0;
             font-family: 'Noto Sans TC', sans-serif;
-            overflow-x: hidden;
-            overflow-y: auto;
-            /* Allow scroll if needed on main body for result */
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
         }
 
         button {
@@ -80,10 +80,10 @@
             flex-direction: column;
             max-width: 480px;
             margin: 0 auto;
-            background: radial-gradient(circle at 50% 30%, #1a1625 0%, #050508 80%);
+            background: url('background.webp') no-repeat center center;
+            background-size: cover;
             position: relative;
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         /* ── Screen Management ── */
@@ -101,6 +101,10 @@
 
         .screen.active {
             display: flex;
+        }
+
+        .screen-overlay {
+            background: transparent !important;
         }
 
         #screen-loading {
@@ -128,105 +132,89 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         @keyframes fadeOut {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            to {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
 
-        /* ── Home Screen ── */
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        .fade-out { animation: fadeOut 0.8s ease forwards; }
+
+        /* ── Home Screen (Layered) ── */
         #screen-home {
-            justify-content: flex-start;
-            background: #000;
-            padding: 0 0 1.5rem 0;
-        }
-
-        .hero-img {
-            width: 100%;
-            height: auto;
-            max-height: 85vh;
-            object-fit: contain;
-            object-position: top;
-            opacity: 0.9;
-        }
-
-        .hero-cta {
-            position: relative;
-            margin-top: 1rem;
-            margin-bottom: 2rem;
-            flex-shrink: 0;
-            background: linear-gradient(135deg, #a855f7, #6b21a8);
-            color: #fff;
-            font-weight: 900;
-            font-size: 1.2rem;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
-            animation: pulse 2s infinite;
+            justify-content: center;
+            background: transparent;
             cursor: pointer;
         }
 
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
+        .book-layer {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            transition: opacity 0.8s ease;
+        }
 
-            50% {
-                transform: scale(1.05);
-            }
+        .finger-pointer {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            pointer-events: none;
+            animation: fingerTap 1.2s infinite;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+        }
 
-            100% {
-                transform: scale(1);
-            }
+        @keyframes fingerTap {
+            0% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+            50% { transform: translateX(-50%) scale(0.85); opacity: 1; }
+            100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
         }
 
         /* ── Core Game Header ── */
         .header {
             width: 100%;
             padding: 1rem 1.5rem;
-            z-index: 10;
+            z-index: 20;
+            position: absolute;
+            top: 0;
         }
 
         .progress-wrap {
             position: relative;
             width: 100%;
-            height: 6px;
+            height: 8px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #c084fc, #a855f7);
+            background: linear-gradient(90deg, #ff0080, #7928ca);
             width: 0%;
             transition: width 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 0, 128, 0.5);
         }
 
         .progress-text {
             text-align: center;
-            font-size: 0.75rem;
-            color: #a1a1aa;
+            font-size: 0.8rem;
+            color: #fff;
             margin-top: 0.5rem;
-            font-weight: 700;
-            letter-spacing: 2px;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
         }
 
         /* ── Egg Area ── */
@@ -243,13 +231,15 @@
 
         .egg-container {
             position: relative;
-            width: 35%;
-            /* slightly narrower */
-            max-width: 180px;
+            width: 50%;
+            max-width: 240px;
             aspect-ratio: 1/1;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-top: 10%;
+            transition: opacity 0.8s ease;
+            opacity: 0;
         }
 
         .egg-img {
@@ -325,16 +315,19 @@
 
         /* ── Panel / Question Area ── */
         .panel {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.7);
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
             padding: 1.5rem;
             padding-bottom: env(safe-area-inset-bottom, 1.5rem);
             display: flex;
             flex-direction: column;
-            min-height: 45vh;
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 48vh;
+            backdrop-filter: blur(15px);
+            border-top: 2px solid rgba(168, 85, 247, 0.3);
+            margin-top: auto;
+            width: 100%;
+            z-index: 15;
         }
 
         .q-title {
@@ -908,9 +901,13 @@
     </div>
 
     <!-- ================= INTRO ================= -->
-    <div class="app-container screen" id="screen-home">
-        <img src="pic/hero.webp" class="hero-img" alt="Hero">
-        <button class="hero-cta" onclick="startGame()">覺醒內在怪物!!</button>
+    <div class="app-container screen" id="screen-home" onclick="startGame()">
+        <img src="book.webp" class="book-layer" id="bookLayer" alt="Book">
+        <div class="finger-pointer" id="fingerPointer">
+            <svg viewBox="0 0 24 24" width="60" height="60" fill="#fff">
+                <path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v3.74c1.21-.81 2-2.18 2-3.74C16 4.46 13.54 2 10.5 2S5 4.46 5 7.5c0 1.56.79 2.93 2 3.74V21a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-2.5h2V21a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-8.5c0-1.56-.79-2.93-2-3.74V7.5c0-1.38-1.12-2.5-2.5-2.5S9 6.12 9 7.5v3.74zM10.5 4c1.93 0 3.5 1.57 3.5 3.5S12.43 11 10.5 11 7 9.43 7 7.5 8.57 4 10.5 4z"/>
+            </svg>
+        </div>
     </div>
     <!-- ================= GAME LOOP ================= -->
     <div class="app-container screen" id="screen-game">
@@ -925,7 +922,7 @@
         <!-- Egg Render -->
         <div class="egg-area" id="eggArea">
             <div class="egg-container" id="eggContainer">
-                <img src="eye.webp" class="egg-img" id="eggImg">
+                <img src="egg.webp" class="egg-img" id="eggImg">
                 <svg class="egg-svg-cracks" viewBox="0 0 200 200" id="eggCracks">
                     <!-- Cracks will be generated here -->
                 </svg>
@@ -1665,14 +1662,40 @@
             document.getElementById('emailModal').classList.add('active');
         }
 
+        function startGame() {
+            sfxHit();
+            const book = document.getElementById('bookLayer');
+            const finger = document.getElementById('fingerPointer');
+            
+            if (book) book.classList.add('fade-out');
+            if (finger) finger.classList.add('fade-out');
+            
+            setTimeout(() => {
+                document.getElementById('screen-home').classList.remove('active');
+                document.getElementById('screen-game').classList.add('active', 'fade-in');
+                
+                // Show Egg after transition
+                setTimeout(() => {
+                    const eggCont = document.getElementById('eggContainer');
+                    if (eggCont) eggCont.style.opacity = '1';
+                }, 500);
+                
+                renderQuestion();
+            }, 800);
+            
+            const bgm = document.getElementById('bgm');
+            if (bgm && bgm.paused) bgm.play().catch(() => {});
+        }
+
         // Init Loading Screen & Preloader
         window.addEventListener('DOMContentLoaded', () => {
             const loadingText = document.querySelector('#screen-loading div:last-child');
 
             const resources = [
-                'pic/hero.webp',
-                'eye.webp',
-                'background.ogg'
+                'background.webp',
+                'book.webp',
+                'egg.webp',
+                'background2.ogg'
             ];
 
             // Add all monster images to preloader
@@ -1688,12 +1711,16 @@
                 }
 
                 if (loadedCount >= totalResources) {
-                    // Small delay so user sees 100%
                     setTimeout(() => {
-                        const loadingScreen = document.getElementById('screen-loading');
-                        if (loadingScreen) loadingScreen.classList.remove('active');
-                        document.getElementById('screen-home').classList.add('active');
-                    }, 300);
+                        const loader = document.getElementById('screen-loading');
+                        if (loader) {
+                            loader.classList.add('fade-out');
+                            setTimeout(() => {
+                                loader.classList.remove('active');
+                                document.getElementById('screen-home').classList.add('active', 'fade-in');
+                            }, 800);
+                        }
+                    }, 500);
                 }
             };
 
@@ -1712,7 +1739,7 @@
                 }
             });
 
-            // Fallback timeout just in case any event fails to fire (8 seconds max wait)
+            // Fallback timeout
             setTimeout(() => {
                 const loadingScreen = document.getElementById('screen-loading');
                 if (loadingScreen && loadingScreen.classList.contains('active')) {
@@ -1744,7 +1771,7 @@
                 detail.style.animation = 'fadeIn 0.5s ease';
             }
 
-            // 1. --- 送到 Supabase 紀錄資料庫 (原本的功能) ---
+            // 1. --- 送到 Supabase 紀錄資料庫 ---
             const SUPABASE_URL = "https://wbvijcrweoljcuksynyp.supabase.co"; 
             const SUPABASE_KEY = "sb_publishable_FhtabuaPzPE8RTOKmHx9TA_XxTc9Dtd";
             const TABLE_NAME = "leads"; 
@@ -1764,8 +1791,7 @@
                 body: JSON.stringify(supabasePayload)
             });
 
-            // 2. --- 送到 Google Apps Script 觸發寄送完整報告 (新增修復) ---
-            // 使用 v2 版本中有效的 GAS URL
+            // 2. --- 送到 Google Apps Script 觸發寄送完整報告 ---
             const GOOGLE_APP_URL = "https://script.google.com/macros/s/AKfycbwC9UTPJRnWCn0ouPPJr958wL2vV9RIUdxL51lyedU40gaSUZkXxA6EWZZPik8kt_BG/exec";
             const reportPayload = {
                 "email": em,
