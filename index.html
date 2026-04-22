@@ -231,13 +231,13 @@
         }
 
         .progress-text {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #d8b4fe;
+            text-align: right;
+            font-size: 0.8rem;
+            color: #fff;
             margin-top: 0.5rem;
-            font-weight: 900;
-            text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 5px #000;
-            letter-spacing: 2px;
+            font-weight: 700;
+            text-shadow: 0 0 5px #000;
+            letter-spacing: 1px;
         }
 
         /* ── Egg Area ── */
@@ -1298,16 +1298,21 @@
                 p.style.top = cy + 'px';
                 document.body.appendChild(p);
 
+                // Random size for variety
+                const size = 3 + Math.random() * 5;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                
                 // Initial velocities
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 8 + 5;
+                const speed = Math.random() * 10 + 6;
                 let vx = Math.cos(angle) * speed;
-                let vy = Math.sin(angle) * speed - 8; // Initial upward pop
+                let vy = Math.sin(angle) * speed - 10; // Stronger pop
                 let x = cx;
                 let y = cy;
-                const gravity = 0.4;
+                const gravity = 0.3;
                 let life = 1.0;
-                const decay = 0.015 + Math.random() * 0.02;
+                const decay = 0.008 + Math.random() * 0.01; // Slower decay for longer life
 
                 const animate = () => {
                     x += vx;
@@ -1315,8 +1320,15 @@
                     vy += gravity;
                     life -= decay;
 
+                    // Sparkling twinkle effect
+                    const twinkle = 0.7 + Math.random() * 0.3;
                     p.style.transform = `translate(${x - cx}px, ${y - cy}px) scale(${life})`;
-                    p.style.opacity = life;
+                    p.style.opacity = life * twinkle;
+                    
+                    // Extra glow when "young"
+                    if (life > 0.7) {
+                        p.style.boxShadow = `0 0 ${15 * life}px #fff, 0 0 ${25 * life}px #a855f7`;
+                    }
 
                     if (life > 0) {
                         requestAnimationFrame(animate);
