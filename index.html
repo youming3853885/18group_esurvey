@@ -941,16 +941,17 @@
             text-align: center;
             background: #1c1c1e;
             border-top: 3px solid #a855f7;
+            padding-top: 2rem;
         }
 
         .mascot-img {
-            width: 120px;
-            height: 120px;
+            width: 280px; /* 3x of original visually fitting mobile */
+            height: auto;
             object-fit: contain;
-            margin: -60px auto 15px auto; /* Pop up half way */
+            margin: 0 auto 20px auto; 
             display: block;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
-            animation: bounce 2s infinite;
+            filter: drop-shadow(0 5px 25px rgba(0,0,0,0.6));
+            animation: bounce 2.5s infinite ease-in-out;
         }
 
         @keyframes bounce {
