@@ -773,15 +773,14 @@
         }
 
         .ig-sticker-space {
-            width: 800px;
-            height: 300px;
-            border: 4px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 30px;
+            width: 600px;
+            height: 200px;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-            color: rgba(255, 255, 255, 0.5);
+            margin-top: 40px;
         }
 
         /* Email Modal */
@@ -1006,7 +1005,7 @@
         <div class="ig-rarity">全台僅 5% 的人擁有此特質</div>
         <img src="" id="igImg" class="ig-img">
         <div class="ig-desc">我的職場天敵是誰？<br>你也來測測你的職場原動力！</div>
-        <div class="ig-sticker-space">將圖片分享到限動，並在此放上【票選貼紙】</div>
+        <div class="ig-sticker-space"></div>
     </div>
 
 
@@ -1601,7 +1600,12 @@
             showToast('⏳ 正在準備專屬卡牌...');
             try {
                 const el = document.getElementById('ig-template');
-                const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#050508', useCORS: true });
+                const canvas = await html2canvas(el, { 
+                    scale: 3, 
+                    backgroundColor: '#050508', 
+                    useCORS: true,
+                    logging: false
+                });
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], 'my_monster_story.png', { type: 'image/png' });
                     
