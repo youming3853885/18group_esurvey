@@ -43,7 +43,8 @@
             }
         })();
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* ── Reset & Constants ── */
         * {
@@ -1610,39 +1611,182 @@
                 const top2 = sortedGroups[1][0];
                 const top3 = sortedGroups[2][0];
 
+                // --- RIASEC Calculation ---
+                const riasecMap = {
+                    'R': ['工程學群', '生物資源學群', '遊憩與運動學群', '地球與環境學群'],
+                    'I': ['數理化學學群', '生命科學學群', '資訊學群', '醫藥衛教學群'],
+                    'A': ['藝術學群', '建築與設計學群', '文史哲學群'],
+                    'S': ['教育學群', '社會與心理學群', '醫藥衛教學群'],
+                    'E': ['管理學群', '財經學群', '大眾傳播學群', '法政學群'],
+                    'C': ['財經學群', '管理學群', '法政學群', '資訊學群']
+                };
+                const riasecScores = { R:0, I:0, A:0, S:0, E:0, C:0 };
+                Object.keys(riasecMap).forEach(code => {
+                    riasecMap[code].forEach(g => { riasecScores[code] += (final[g] || 0); });
+                    // Normalize (rough)
+                    riasecScores[code] = Math.min(100, Math.round((riasecScores[code] / (riasecMap[code].length * 100)) * 100));
+                });
+
                 window._resultScores = final;
+                window._riasec = riasecScores;
                 window._topName = top1;
                 window._monsterImgPath = MONSTERS[top1] || MONSTERS['資訊學群'];
 
-                // Setup IG Template
-                document.getElementById('igTitle').textContent = `我是SSR級的${top1.replace('學群', '')}！`;
-                document.getElementById('igImg').src = window._monsterImgPath;
-
                 // Setup Detailed Analysis HTML
-                let analysisHtml = `<h3 style="color:#c084fc; font-size:1.2rem; margin-bottom:1rem;">專屬能力分析與職涯路徑</h3>`;
-                const career = CAREER_MAP[top1];
-                if (career) {
-                    analysisHtml += `<div style="background:rgba(255,255,255,0.1); padding:1rem; border-radius:12px; margin-bottom:1rem; text-align:left;">
-                        <div style="font-weight:bold; color:#fff; margin-bottom:0.3rem;">💼 未來職涯路徑</div>
-                        <div style="color:#e2e8f0; font-size:0.9rem;">${career}</div>
-                    </div>`;
-                }
-                const w = SUBJECT_WEIGHTS[top1];
-                if (w) {
-                    analysisHtml += `<div style="background:rgba(255,255,255,0.1); padding:1rem; border-radius:12px; margin-bottom:0.5rem; text-align:left;">
-                        <div style="font-weight:bold; color:#fff; margin-bottom:0.5rem;">📚 推薦學群參採科目比重參考</div>
-                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.2); padding-bottom:0.3rem; margin-bottom:0.5rem; font-size:0.8rem; color:#a1a1aa;">
-                            <span>科目</span><span>參採率</span>
+                let analysisHtml = `
+                    <div style="margin-bottom:2rem; text-align:center;">
+                        <h2 style="color:#c084fc; font-size:1.4rem; margin-bottom:0.5rem;">你的職涯羅盤 — 深度分析報告</h2>
+                        <div style="font-size:0.9rem; color:#a1a1aa;">三維度分析完成 • 最高適配指數 ${final[top1]}%</div>
+                    </div>
+
+                    <!-- RIASEC Section -->
+                    <div style="background:rgba(255,255,255,0.05); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+                        <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">📊 RIASEC 人格輪廓</h3>
+                        <div style="height:250px; position:relative; margin-bottom:1rem;">
+                            <canvas id="riasecChart"></canvas>
                         </div>
-                        ${Object.keys(w).map(sub => `
-                            <div style="display:flex; justify-content:space-between; margin-bottom:0.3rem; font-size:0.9rem; ${w[sub] > 50 ? 'color:#f87171; font-weight:bold;' : 'color:#e2e8f0;'}">
-                                <span>${sub}</span><span>${w[sub]}%</span>
+                        <div style="font-size:0.8rem; color:#a1a1aa; line-height:1.6; display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                            <div><b style="color:#fff;">R 現實型</b>：動手實作、技術操作</div>
+                            <div><b style="color:#fff;">I 研究型</b>：邏輯分析、科學探索</div>
+                            <div><b style="color:#fff;">A 藝術型</b>：創作表達、審美創新</div>
+                            <div><b style="color:#fff;">S 社會型</b>：助人服務、溝通協作</div>
+                            <div><b style="color:#fff;">E 企業型</b>：領導組織、說服影響</div>
+                            <div><b style="color:#fff;">C 傳統型</b>：系統規劃、精確執行</div>
+                        </div>
+                    </div>
+
+                    <!-- Top 3 Progress Bars -->
+                    <div style="background:rgba(255,255,255,0.05); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+                        <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1.2rem;">🏆 你的命定學群 TOP 3</h3>
+                        ${[top1, top2, top3].map((g, i) => `
+                            <div style="margin-bottom:1rem;">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                                    <span style="color:#fff; font-weight:bold;">${i+1}. ${g}</span>
+                                    <span style="color:#a855f7;">${final[g]}%</span>
+                                </div>
+                                <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                                    <div style="width:${final[g]}%; height:100%; background:linear-gradient(90deg, #6366f1, #a855f7); border-radius:4px;"></div>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
-                    <div style="font-size:0.75rem; color:#a1a1aa; text-align:left;">*參採率：代表該學群下有多少比例的科系會看這個科目的成績。</div>`;
-                }
+
+                    <!-- Interest x Ability Cross Analysis -->
+                    <div style="background:rgba(255,255,255,0.05); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+                        <h3 style="color:#fff; font-size:1.1rem; margin-bottom:0.5rem;">🔍 興趣 × 能力 交叉分析</h3>
+                        <p style="font-size:0.85rem; color:#a1a1aa; margin-bottom:1rem;">看看你的熱情和你的能力有沒有對齊</p>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; color:#e2e8f0;">
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                                <th style="text-align:left; padding:0.5rem 0;">學群</th>
+                                <th style="text-align:center;">熱情</th>
+                                <th style="text-align:center;">能力</th>
+                                <th style="text-align:right;">建議</th>
+                            </tr>
+                            ${[top1, top2, top3].map(g => {
+                                const intScore = Math.round(ni[g] || 0);
+                                const ablScore = Math.round(na[g] || 0);
+                                let advice = ablScore >= 70 ? '✅ 完美對齊' : (intScore > ablScore ? '⚠️ 強化能力' : '💡 值得探索');
+                                let adviceBg = ablScore >= 70 ? '#065f46' : (intScore > ablScore ? '#92400e' : '#1e3a8a');
+                                return `
+                                <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                    <td style="padding:0.8rem 0;">${g}</td>
+                                    <td style="text-align:center;">${'★'.repeat(Math.ceil(intScore/20))}${'☆'.repeat(5-Math.ceil(intScore/20))}</td>
+                                    <td style="text-align:center;">${'★'.repeat(Math.ceil(ablScore/20))}${'☆'.repeat(5-Math.ceil(ablScore/20))}</td>
+                                    <td style="text-align:right;"><span style="background:${adviceBg}; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${advice}</span></td>
+                                </tr>`;
+                            }).join('')}
+                        </table>
+                    </div>
+
+                    <!-- Career Path -->
+                    <div style="background:rgba(255,255,255,0.05); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+                        <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1.2rem;">💼 適合的職涯方向</h3>
+                        ${[top1, top2, top3].map(g => `
+                            <div style="margin-bottom:1rem;">
+                                <div style="color:#c084fc; font-weight:bold; font-size:0.9rem; margin-bottom:0.5rem;">${g}</div>
+                                <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+                                    ${(CAREER_MAP[g] || '專業人員').split('、').map(role => `
+                                        <span style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); color:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:0.75rem;">${role.split('（')[0]}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Action Plan -->
+                    <div style="background:rgba(255,255,255,0.05); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+                        <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1.2rem;">📌 雙軌行動計畫 (TOP 1: ${top1})</h3>
+                        <div style="border-left:2px solid #a855f7; padding-left:1rem; margin-bottom:1.5rem; position:relative;">
+                            <div style="background:rgba(168,85,247,0.1); padding:0.8rem; border-radius:8px; margin-bottom:1rem;">
+                                <div style="color:#a855f7; font-size:0.75rem; font-weight:bold; margin-bottom:0.3rem;">📱 今天可以做的事</div>
+                                <div style="color:#fff; font-size:0.85rem;">搜尋一篇關於「${top1}」的一日工作 Vlog，看看專業人士都在做什麼。</div>
+                            </div>
+                            <div style="background:rgba(52,211,153,0.1); padding:0.8rem; border-radius:8px; margin-bottom:1rem;">
+                                <div style="color:#34d399; font-size:0.75rem; font-weight:bold; margin-bottom:0.3rem;">🗓️ 這個月可以做的事</div>
+                                <div style="color:#fff; font-size:0.85rem;">找尋相關學群的線上體驗課程，或者參加一場實體的職場講座。</div>
+                            </div>
+                            <div style="background:rgba(251,191,36,0.1); padding:0.8rem; border-radius:8px;">
+                                <div style="color:#fbbf24; font-size:0.75rem; font-weight:bold; margin-bottom:0.3rem;">🎯 一年後要確認的事</div>
+                                <div style="color:#fff; font-size:0.85rem;">強化與該學群相關的核心科目（如數A、英文），了解大學入學的甄試條件。</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Subject Weights -->
+                    <div style="background:rgba(255,255,255,0.05); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
+                        <h3 style="color:#fff; font-size:1.1rem; margin-bottom:1rem;">📚 參採科目比重參考 (TOP 3)</h3>
+                        ${[top1, top2, top3].map(g => {
+                            const w = SUBJECT_WEIGHTS[g] || {};
+                            return `
+                            <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:12px; margin-bottom:1rem;">
+                                <div style="color:#fff; font-size:0.85rem; font-weight:bold; margin-bottom:0.8rem;">${g}</div>
+                                ${Object.keys(w).map(sub => `
+                                    <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.5rem;">
+                                        <span style="width:30px; font-size:0.8rem; color:#a1a1aa;">${sub}</span>
+                                        <div style="flex:1; height:6px; background:rgba(255,255,255,0.05); border-radius:3px; overflow:hidden;">
+                                            <div style="width:${w[sub]}%; height:100%; background:${w[sub] > 70 ? '#f87171' : (w[sub] > 40 ? '#6366f1' : '#4b5563')};"></div>
+                                        </div>
+                                        <span style="width:35px; text-align:right; font-size:0.75rem; color:${w[sub] > 70 ? '#f87171' : '#e2e8f0'}">${w[sub]}%</span>
+                                    </div>
+                                `).join('')}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                `;
                 document.getElementById('detailedAnalysisContainer').innerHTML = analysisHtml;
+
+                // Setup RIASEC Chart
+                setTimeout(() => {
+                    const ctx = document.getElementById('riasecChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: ['R 現實型', 'I 研究型', 'A 藝術型', 'S 社會型', 'E 企業型', 'C 傳統型'],
+                            datasets: [{
+                                label: '性格分佈',
+                                data: [riasecScores.R, riasecScores.I, riasecScores.A, riasecScores.S, riasecScores.E, riasecScores.C],
+                                backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                                borderColor: 'rgba(168, 85, 247, 1)',
+                                pointBackgroundColor: 'rgba(168, 85, 247, 1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    grid: { color: 'rgba(255,255,255,0.1)' },
+                                    angleLines: { color: 'rgba(255,255,255,0.1)' },
+                                    ticks: { display: false },
+                                    pointLabels: { color: '#a1a1aa', font: { size: 10 } }
+                                }
+                            },
+                            plugins: { legend: { display: false } },
+                            maintainAspectRatio: false
+                        }
+                    });
+                }, 100);
 
                 // Setup Top 3 Thumbnails
                 const tBox = document.getElementById('top3Container');
@@ -1876,6 +2020,7 @@
                 "grade": S.answers['grade'] || "未填寫",
                 "clarity": S.answers['clarity'] || "未填寫",
                 "topGroup": window._topName,
+                "riasec": window._riasec,
                 "finalScores": window._resultScores,
                 "monsterImg": window._monsterImgPath,
                 "rawResponses": {
