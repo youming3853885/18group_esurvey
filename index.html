@@ -1516,7 +1516,7 @@
                 btn.classList.add('sel-best');
                 btn.querySelector('.scenario-badge').textContent = '👍';
                 document.getElementById('qDesc').innerHTML = '🎯 已選擇最想做。 <br><span style="color:#f87171">👇 現在請選擇1個「絕對不想做」的地雷</span>';
-                processHit();
+                sfxHit(); // Only hit sound for first selection
             } else {
                 // 2nd click = WORST
                 if (opt.oIdx === S.curScenarioBest) {
