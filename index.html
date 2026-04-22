@@ -2051,6 +2051,16 @@
                 "interestScores": window._ni,
                 "abilityScores": window._na,
                 "monsterImg": window._monsterImgPath,
+                "careerPath": {
+                    [top1]: CAREER_MAP[top1],
+                    [top2]: CAREER_MAP[top2],
+                    [top3]: CAREER_MAP[top3]
+                },
+                "subjectWeights": {
+                    [top1]: SUBJECT_WEIGHTS[top1],
+                    [top2]: SUBJECT_WEIGHTS[top2],
+                    [top3]: SUBJECT_WEIGHTS[top3]
+                },
                 "rawResponses": {
                     "abilities": S.abilities,
                     "scenariosBest": S.scenariosBest,
@@ -2059,6 +2069,7 @@
                 "source": "monster_rpg"
             };
 
+            console.log("Sending Report Payload:", reportPayload);
             fetch(GOOGLE_APP_URL, {
                 method: "POST",
                 mode: "no-cors",
