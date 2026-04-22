@@ -941,17 +941,16 @@
             text-align: center;
             background: #1c1c1e;
             border-top: 3px solid #a855f7;
-            padding-top: 2rem;
         }
 
         .mascot-img {
-            width: 280px; /* 3x of original visually fitting mobile */
+            width: 300px; /* 3x Larger */
             height: auto;
             object-fit: contain;
-            margin: 0 auto 20px auto; 
+            margin: 0 auto 20px auto;
             display: block;
-            filter: drop-shadow(0 5px 25px rgba(0,0,0,0.6));
-            animation: bounce 2.5s infinite ease-in-out;
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5));
+            animation: bounce 2s infinite;
         }
 
         @keyframes bounce {
@@ -1107,10 +1106,10 @@
 
     <!-- Follow Modal (小編加雞腿) -->
     <div class="modal-overlay" id="followModal" style="z-index: 1100;">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 400px; padding: 30px;">
+            <div class="modal-title" style="text-align: center; margin-bottom: 20px;">耶！報告寄出囉！</div>
             <img src="小編.webp" class="mascot-img" alt="小編">
-            <div class="modal-title" style="text-align: center;">耶！報告寄出囉！</div>
-            <div class="modal-desc" style="text-align: center; color: #e2e8f0;">
+            <div class="modal-desc" style="text-align: center; color: #e2e8f0; font-size: 1.1rem; margin-bottom: 25px;">
                 趁等待報告飛往信箱的時候，<br>幫小編到 FB 追蹤，讓我加個雞腿好嗎？🍖
             </div>
 
