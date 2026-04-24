@@ -1871,27 +1871,30 @@
                     <div style="background:rgba(255,255,255,0.05); padding:1.5rem; border-radius:16px; margin-bottom:1.5rem;">
                         <h3 style="color:#fff; font-size:1.1rem; margin-bottom:0.5rem;">🔍 興趣 × 能力 交叉分析</h3>
                         <p style="font-size:0.85rem; color:#a1a1aa; margin-bottom:1rem;">看看你的熱情和你的能力有沒有對齊</p>
-                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem; color:#e2e8f0;">
-                            <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
-                                <th style="text-align:left; padding:0.5rem 0;">學群</th>
-                                <th style="text-align:center;">熱情</th>
-                                <th style="text-align:center;">能力</th>
-                                <th style="text-align:right;">建議</th>
-                            </tr>
-                            ${[top1, top2, top3].map(g => {
-                                const intScore = Math.round(ni[g] || 0);
-                                const ablScore = Math.round(na[g] || 0);
-                                let advice = ablScore >= 70 ? '✅ 完美對齊' : (intScore > ablScore ? '⚠️ 強化能力' : '💡 值得探索');
-                                let adviceBg = ablScore >= 70 ? '#065f46' : (intScore > ablScore ? '#92400e' : '#1e3a8a');
-                                return `
-                                <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                                    <td style="padding:0.8rem 0;">${g}</td>
-                                    <td style="text-align:center;"><span style="color:#f59e0b;">${'★'.repeat(Math.ceil(intScore/20))}</span><span style="color:rgba(255,255,255,0.2);">${'★'.repeat(5-Math.ceil(intScore/20))}</span></td>
-                                    <td style="text-align:center;"><span style="color:#10b981;">${'★'.repeat(Math.ceil(ablScore/20))}</span><span style="color:rgba(255,255,255,0.2);">${'★'.repeat(5-Math.ceil(ablScore/20))}</span></td>
-                                    <td style="text-align:right;"><span style="background:${adviceBg}; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${advice}</span></td>
-                                </tr>`;
-                            }).join('')}
-                        </table>
+                        ${[top1, top2, top3].map(g => {
+                            const intScore = Math.round(ni[g] || 0);
+                            const ablScore = Math.round(na[g] || 0);
+                            const iFill = Math.ceil(intScore/20), aFill = Math.ceil(ablScore/20);
+                            let advice = ablScore >= 70 ? '✅ 完美對齊' : (intScore > ablScore ? '⚠️ 強化能力' : '💡 值得探索');
+                            let adviceBg = ablScore >= 70 ? '#065f46' : (intScore > ablScore ? '#92400e' : '#1e3a8a');
+                            return `
+                            <div style="background:rgba(255,255,255,0.04); border-radius:12px; padding:0.9rem 1rem; margin-bottom:0.6rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; gap:0.5rem;">
+                                    <span style="color:#fff; font-weight:bold; font-size:0.9rem;">${g}</span>
+                                    <span style="background:${adviceBg}; color:#fff; padding:3px 8px; border-radius:6px; font-size:0.7rem; white-space:nowrap; flex-shrink:0;">${advice}</span>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                                    <div style="display:flex; align-items:center; gap:0.6rem; font-size:0.8rem;">
+                                        <span style="color:#a1a1aa; width:2.5rem; flex-shrink:0;">熱情</span>
+                                        <span style="letter-spacing:1px;"><span style="color:#f59e0b;">${'★'.repeat(iFill)}</span><span style="color:rgba(255,255,255,0.2);">${'★'.repeat(5-iFill)}</span></span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.6rem; font-size:0.8rem;">
+                                        <span style="color:#a1a1aa; width:2.5rem; flex-shrink:0;">能力</span>
+                                        <span style="letter-spacing:1px;"><span style="color:#10b981;">${'★'.repeat(aFill)}</span><span style="color:rgba(255,255,255,0.2);">${'★'.repeat(5-aFill)}</span></span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        }).join('')}
                     </div>
 
                     <!-- Career Path -->
