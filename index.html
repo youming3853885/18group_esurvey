@@ -4,9 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta property="og:title" content="我是稀有度 SSR 的怪物！快來測測你的職群原動力！">
-    <meta property="og:description" content="全台僅 5% 的人擁有此特質！探索你的潛在天賦。">
-    <meta property="og:image" content="https://example.com/share-image.jpg">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://18group-esurvey.vercel.app/">
+    <meta property="og:title" content="職群怪物圖鑑｜你也來測測你的職群內在怪物！">
+    <meta property="og:description" content="18 學群內在怪物測驗，探索你的潛在職群天賦與原動力。">
+    <meta property="og:image" content="https://18group-esurvey.vercel.app/monster_egg.png">
+    <meta property="og:image:secure_url" content="https://18group-esurvey.vercel.app/monster_egg.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="職群怪物圖鑑">
+    <meta property="og:locale" content="zh_TW">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="職群怪物圖鑑｜你也來測測你的職群內在怪物！">
+    <meta name="twitter:description" content="18 學群內在怪物測驗，探索你的潛在職群天賦與原動力。">
+    <meta name="twitter:image" content="https://18group-esurvey.vercel.app/monster_egg.png">
     <title>職群怪物圖鑑｜你內心的是哪一隻怪物？</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
     <script>
@@ -2038,7 +2050,12 @@
 
         function shareToFB() {
             sfxHit();
-            const shareUrl = encodeURIComponent(window.location.href);
+            const path = window._monsterImgPath || '';
+            const match = path.match(/monsters\/(\d+)/);
+            const monsterId = match ? match[1] : null;
+            const base = 'https://18group-esurvey.vercel.app';
+            const targetUrl = monsterId ? `${base}/share/${monsterId}.html` : `${base}/`;
+            const shareUrl = encodeURIComponent(targetUrl);
             window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
         }
 
