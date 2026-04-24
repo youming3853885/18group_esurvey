@@ -936,6 +936,28 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        /* Email Sent Confirmation Modal */
+        #emailSentModal {
+            align-items: center;
+            justify-content: center;
+        }
+        #emailSentModal .modal-content {
+            border-radius: 20px;
+            border-top: none;
+            border: 2px solid rgba(168,85,247,0.5);
+            width: 85%;
+            max-width: 340px;
+            text-align: center;
+            padding: 2rem 1.5rem;
+            transform: scale(0.85);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.3s;
+        }
+        #emailSentModal.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
         /* Follow Modal (Post-Email) */
         #followModal .modal-content {
             text-align: center;
@@ -1101,6 +1123,16 @@
 
             <input type="email" class="email-input" id="emailInput" placeholder="輸入你的 Email">
             <button class="btn-email" id="btnSendEmail" onclick="submitEmail()">確認送出</button>
+        </div>
+    </div>
+
+    <!-- Email Sent Confirmation Modal -->
+    <div class="modal-overlay" id="emailSentModal" style="z-index: 1200;">
+        <div class="modal-content">
+            <div style="font-size:3rem; margin-bottom:0.8rem;">✅</div>
+            <h3 style="color:#fff; font-size:1.2rem; font-weight:900; margin-bottom:0.7rem;">完整分析報告已寄出！</h3>
+            <p style="color:#a1a1aa; font-size:0.88rem; line-height:1.6; margin-bottom:1.5rem;">請至您的信箱查收，<br>若沒看到，記得檢查垃圾郵件資料夾。</p>
+            <button onclick="confirmEmailSent()" style="width:100%; padding:1rem; background:#a855f7; color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:900; cursor:pointer; transition:opacity 0.2s;">我知道了！</button>
         </div>
     </div>
 
@@ -2078,15 +2110,7 @@
             btn.textContent = '寄送中...';
             btn.style.opacity = 0.5;
 
-            // Reveal Detailed Analysis immediately for UX
             document.getElementById('emailModal').classList.remove('active');
-            const teaser = document.getElementById('gapTeaser');
-            if(teaser) teaser.style.display = 'none';
-            const detail = document.getElementById('detailedAnalysisContainer');
-            if(detail) {
-                detail.style.display = 'block';
-                detail.style.animation = 'fadeIn 0.5s ease';
-            }
 
             // 1. --- 送到 Supabase 紀錄資料庫 ---
             const SUPABASE_URL = "https://wbvijcrweoljcuksynyp.supabase.co"; 
@@ -2145,19 +2169,29 @@
                 headers: { "Content-Type": "text/plain" },
                 body: JSON.stringify(reportPayload)
             }).then(() => {
-                showToast('✅ 完整分析報告已寄至您的信箱！');
                 btn.textContent = '確認送出';
                 btn.style.opacity = 1;
-
-                // Show Follow Modal
-                setTimeout(() => {
-                    document.getElementById('followModal').classList.add('active');
-                }, 500);
+                document.getElementById('emailSentModal').classList.add('active');
             }).catch(() => {
-                showToast('⚠️ 報告寄送異常，但資料已成功備份');
                 btn.textContent = '確認送出';
                 btn.style.opacity = 1;
+                showToast('⚠️ 報告寄送異常，但資料已成功備份');
+                confirmEmailSent();
             });
+        }
+
+        function confirmEmailSent() {
+            document.getElementById('emailSentModal').classList.remove('active');
+            const teaser = document.getElementById('gapTeaser');
+            if (teaser) teaser.style.display = 'none';
+            const detail = document.getElementById('detailedAnalysisContainer');
+            if (detail) {
+                detail.style.display = 'block';
+                detail.style.animation = 'fadeIn 0.5s ease';
+            }
+            setTimeout(() => {
+                document.getElementById('followModal').classList.add('active');
+            }, 400);
         }
 
         function showToast(msg) {
