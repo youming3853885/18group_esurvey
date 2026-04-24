@@ -2020,13 +2020,8 @@
             sfxHit();
             showToast('⏳ 正在準備專屬卡牌...');
 
-            // 推導對應這隻怪物的 share 頁 URL（FB 靠這個讀 OG image）
-            const path = window._monsterImgPath || '';
-            const match = path.match(/monsters\/(\d+)/);
-            const monsterId = match ? match[1] : null;
-            const base = 'https://18group-esurvey.vercel.app';
-            const targetUrl = monsterId ? `${base}/share/${monsterId}.html` : `${base}/`;
-            const shareText = '你也來測測你的職群內在怪物 👉 ' + targetUrl;
+            const siteUrl = 'https://18group-esurvey.vercel.app/';
+            const shareText = '你也來測測你的職群內在怪物 👉 ' + siteUrl;
 
             try {
                 const el = document.getElementById('ig-template');
@@ -2047,7 +2042,7 @@
                                 files: [file],
                                 title: '職群怪物圖鑑',
                                 text: shareText,
-                                url: targetUrl
+                                url: siteUrl
                             });
                             showToast('✅ 已開啟分享選單');
                             return;
