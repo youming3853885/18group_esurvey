@@ -2111,6 +2111,7 @@
             btn.style.opacity = 0.5;
 
             document.getElementById('emailModal').classList.remove('active');
+            document.getElementById('emailSentModal').classList.add('active');
 
             // 1. --- 送到 Supabase 紀錄資料庫 ---
             const SUPABASE_URL = "https://wbvijcrweoljcuksynyp.supabase.co"; 
@@ -2168,15 +2169,8 @@
                 mode: "no-cors",
                 headers: { "Content-Type": "text/plain" },
                 body: JSON.stringify(reportPayload)
-            }).then(() => {
-                btn.textContent = '確認送出';
-                btn.style.opacity = 1;
-                document.getElementById('emailSentModal').classList.add('active');
             }).catch(() => {
-                btn.textContent = '確認送出';
-                btn.style.opacity = 1;
                 showToast('⚠️ 報告寄送異常，但資料已成功備份');
-                confirmEmailSent();
             });
         }
 
