@@ -804,22 +804,19 @@
         }
 
         .ig-desc {
-            font-size: 50px;
-            font-weight: bold;
+            font-size: 60px;
+            font-weight: 900;
             color: #e2e8f0;
-            margin-bottom: 60px;
+            margin-bottom: 30px;
             line-height: 1.5;
         }
 
-        .ig-sticker-space {
-            width: 600px;
-            height: 200px;
-            border: 2px dashed rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 40px;
+        .ig-url {
+            font-size: 38px;
+            font-weight: bold;
+            color: #c084fc;
+            letter-spacing: 1px;
+            word-break: break-all;
         }
 
         .modal-overlay {
@@ -1190,11 +1187,9 @@
 
     <!-- B1: Hidden Template for html2canvas -->
     <div id="ig-template">
-        <div class="ig-title" id="igTitle">我是SSR級的時鐘怪客！</div>
-        <div class="ig-rarity">全台僅 5% 的人擁有此特質</div>
         <img src="" id="igImg" class="ig-img">
-        <div class="ig-desc">我的職群天敵是誰？<br>你也來測測你的職群原動力！</div>
-        <div class="ig-sticker-space"></div>
+        <div class="ig-desc">你也來測測你的職群內在怪物</div>
+        <div class="ig-url">https://18group-esurvey.vercel.app/</div>
     </div>
 
 
@@ -1984,6 +1979,7 @@
 
                 // Show Result
                 document.getElementById('resMonsterImg').src = window._monsterImgPath;
+                document.getElementById('igImg').src = window._monsterImgPath;
                 document.getElementById('screen-game').classList.remove('active');
                 document.getElementById('screen-result').classList.add('active');
 
@@ -2011,7 +2007,8 @@
                             await navigator.share({
                                 files: [file],
                                 title: '職群怪物圖鑑',
-                                text: `我的職群原動力是「${window._topName}」！快來測測你內心住著什麼怪物？`
+                                text: `你也來測測你的職群內在怪物 👉 https://18group-esurvey.vercel.app/`,
+                                url: 'https://18group-esurvey.vercel.app/'
                             });
                             showToast('✅ 請在分享選項中選擇「Instagram 限時動態」');
                             return;
